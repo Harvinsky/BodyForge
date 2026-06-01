@@ -1,0 +1,5 @@
+Contact: mailto:security@example.com
+Preferred-Languages: sk, en
+Policy: https://github.com/YOUR_USER/bodyforge/security/policy
+
+# Nahraď mailto a Policy URL svojimi údajmi po zverejnení repozitára.
