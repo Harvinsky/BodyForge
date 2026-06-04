@@ -30,7 +30,6 @@ export const enMessages = {
     deleteAccount: "Delete account",
     deleteAccountConfirm: "Are you sure you want to delete your account? All your data will be permanently removed.",
     deleteAccountError: "Failed to delete account. Please try again.",
-    exportData: "Export data",
     exceeded: "Exceeded",
     deficit: "Deficit",
     fasting: "Fasting",

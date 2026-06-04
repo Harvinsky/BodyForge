@@ -31,7 +31,6 @@ export const skMessages = {
     deleteAccount: "Vymazať účet",
     deleteAccountConfirm: "Naozaj chceš vymazať účet? Všetky tvoje dáta budú nenávratne zmazané.",
     deleteAccountError: "Nepodarilo sa vymazať účet. Skús to znova.",
-    exportData: "Exportovať dáta",
     exceeded: "Prekročené",
     deficit: "Deficit",
     fasting: "Fasting",
