@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, LogOut, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { LogIn, LogOut } from "lucide-react";
 import { DeerLogo } from "@/components/dashboard/deer-logo";
 import { NotificationsBellMenu } from "@/components/dashboard/notifications-bell-menu";
 import { Button } from "@/components/ui/button";
@@ -24,20 +23,6 @@ export function DashboardHeader() {
   const { email, signOut } = useAppUser();
   const { settings } = useBodyGoal();
   const { t, locale } = useI18n();
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDeleteAccount = async () => {
-    if (!window.confirm(t("common.deleteAccountConfirm"))) return;
-    setDeleting(true);
-    try {
-      const res = await fetch("/api/account/delete", { method: "DELETE" });
-      if (!res.ok) throw new Error();
-      await signOut();
-    } catch {
-      alert(t("common.deleteAccountError"));
-      setDeleting(false);
-    }
-  };
   const configured = isBodyGoalConfigured(settings);
   const timePercent = getGoalProgressPercent(settings);
   const weightPercent = getWeightProgressPercent(settings);
@@ -92,16 +77,6 @@ export function DashboardHeader() {
                     </span>
                   </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void handleDeleteAccount()}
-                  disabled={deleting}
-                  className="h-6 px-2 text-[9px] text-destructive/70 hover:bg-destructive/10 hover:text-destructive sm:text-[10px]"
-                >
-                  <Trash2 className="mr-1 h-3 w-3" />
-                  {t("common.deleteAccount")}
-                </Button>
               </div>
             ) : (
               <Button

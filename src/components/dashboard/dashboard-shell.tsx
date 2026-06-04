@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { WeeklyProgress } from "@/components/dashboard/weekly-progress";
 import { CalendarEvents } from "@/components/dashboard/calendar-events";
@@ -103,6 +104,19 @@ function DashboardContent() {
             </div>
             <ProtocolModules />
             <DayHistoryPanel />
+            {authReady && email && (
+              <div className="flex items-center justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteAccount()}
+                  disabled={deleting}
+                  className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  {t("common.deleteAccount")}
+                </button>
+              </div>
+            )}
           </div>
           <div className="order-1 w-full min-w-0 max-lg:pt-0 lg:order-2 lg:sticky lg:top-[5.5rem] lg:self-start">
             <StatsSidebar />
