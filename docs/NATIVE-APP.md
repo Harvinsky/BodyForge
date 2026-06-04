@@ -25,7 +25,7 @@ Appka je **Capacitor shell** okolo toho istého Next.js webu — nemusíš písa
 
 ### 1. Vercel URL do Capacitor
 
-V PowerShell v `c:\T-800App`:
+V PowerShell v `c:\BodyForgeApp`:
 
 ```powershell
 $env:CAPACITOR_SERVER_URL = "https://TVOJA-APP.vercel.app"

@@ -41,7 +41,7 @@ APK súbor (`npm run android:apk`) nechaj na **Fázu 2**, až keď budeš spokoj
 
 ## Krok 1 — Spusti server na PC
 
-V `c:\T-800App`:
+V `c:\BodyForgeApp`:
 
 ```powershell
 npm run build
@@ -57,7 +57,7 @@ Nechaj okno otvorené. Výpis ukáže napr. `http://192.168.1.10:3000` — túto
 Nové okno PowerShell:
 
 ```powershell
-cd c:\T-800App
+cd c:\BodyForgeApp
 npm run android:sync
 ```
 

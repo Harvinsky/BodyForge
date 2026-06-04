@@ -44,7 +44,7 @@ Prihlásenie **neukazuje** `supabase.co` ani Vercel — len systémový Google v
 3. **SHA-1** debug kľúča:
 
 ```powershell
-cd c:\T-800App\android
+cd c:\BodyForgeApp\android
 .\gradlew.bat signingReport
 ```
 
@@ -81,7 +81,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=xxx
 **Na PC:**
 
 ```powershell
-cd c:\T-800App
+cd c:\BodyForgeApp
 npm run prod:mobile
 ```
 
