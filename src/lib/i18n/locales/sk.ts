@@ -120,9 +120,15 @@ export const skMessages = {
   protocolSettings: {
     title: "Šablóna jedálneho protokolu",
     intro:
-      "Predvolený BodyForge protokol alebo vlastné texty pre Jedlo 1, snack a Jedlo 2. Časy jedál sa riadia jedálnym oknom vyššie.",
-    modeBodyforge: "BodyForge (predvolené)",
-    modeCustom: "Vlastný protokol",
+      "Vyber šablónu — malé tlačidlá nižšie. Časy jedál riadi jedálne okno vyššie. Vlastný = úprava textov.",
+    presetBodyforge: "BodyForge",
+    presetKeto: "Keto",
+    presetVegetarian: "Vege",
+    presetGirls: "Girls",
+    presetAthlete: "Šport",
+    presetCustom: "Vlastný",
+    presetActiveHint: "Šablóna je uložená.",
+    editCopy: "Upraviť kópiu",
     meal1Section: "Jedlo 1",
     snackSection: "Snack",
     snackEnabled: "Zapnutý snack",
@@ -145,6 +151,9 @@ export const skMessages = {
     themeOcean: "Oceán",
     themeEmber: "Ember",
     themeSlate: "Slate",
+    themeGirls: "Girls · pastel",
+    themeForest: "Les",
+    themeBlossom: "Kvet",
   },
   calories: {
     dailyLimitTitle: "Tvoj denný limit kalórií",

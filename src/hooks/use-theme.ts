@@ -1,23 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-
-/** dark = predvolený BodyForge (zlatá), light = svetlý režim */
-export const APP_THEMES = [
-  "dark",
-  "light",
-  "ocean",
-  "ember",
-  "slate",
-] as const;
-
-export type AppTheme = (typeof APP_THEMES)[number];
+import { APP_THEMES, isAppTheme, type AppTheme } from "@/lib/app-themes";
 
 const THEME_KEY = "bodyforge-theme";
-
-function isAppTheme(value: string | null): value is AppTheme {
-  return value != null && (APP_THEMES as readonly string[]).includes(value);
-}
 
 function applyTheme(theme: AppTheme) {
   if (typeof document === "undefined") return;
@@ -28,8 +14,10 @@ export function useTheme() {
   const [theme, setThemeState] = useState<AppTheme>("dark");
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
+    const raw = localStorage.getItem(THEME_KEY);
+    const stored = raw === "baby" ? "girls" : raw;
     const initial: AppTheme = isAppTheme(stored) ? stored : "dark";
+    if (raw === "baby") localStorage.setItem(THEME_KEY, "girls");
     setThemeState(initial);
     applyTheme(initial);
   }, []);
@@ -53,3 +41,4 @@ export function useTheme() {
 }
 
 export type Theme = AppTheme;
+export { APP_THEMES, type AppTheme } from "@/lib/app-themes";

@@ -50,7 +50,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("bodyforge-theme");var ok=t&&["dark","light","ocean","ember","slate"].indexOf(t)>=0;if(ok)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("bodyforge-theme");var ok=t&&["dark","light","ocean","ember","slate","girls","forest","blossom"].indexOf(t)>=0;if(ok)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`,
           }}
         />
       </head>

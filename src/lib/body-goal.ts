@@ -7,7 +7,7 @@ import {
   parseMealProtocolMode,
   sanitizeCustomMealProtocol,
   type CustomMealProtocol,
-  type MealProtocolMode,
+  type MealProtocolPresetId,
 } from "@/lib/meal-protocol-config";
 
 
@@ -32,7 +32,7 @@ export interface BodyGoalSettings {
 
   hydrationTargetLiters: number | null;
 
-  mealProtocolMode: MealProtocolMode;
+  mealProtocolMode: MealProtocolPresetId;
 
   mealProtocolCustom: CustomMealProtocol | null;
 

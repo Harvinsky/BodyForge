@@ -1,6 +1,9 @@
 import type { BodyGoalSettings } from "@/lib/body-goal";
 import type { EatingWindow } from "@/lib/eating-window";
-import { buildMealBlocksFromCustomProtocol } from "@/lib/meal-protocol-config";
+import {
+  buildMealBlocksFromCustomProtocol,
+  resolveMealProtocolContent,
+} from "@/lib/meal-protocol-config";
 import { buildLocalizedMealBlocks } from "@/lib/i18n/meal-plan-blocks";
 import type { MealBlock } from "@/lib/meal-plan-protocol";
 import type { MessageKey, TranslateParams } from "@/lib/i18n/types";
@@ -14,14 +17,13 @@ export function getMealBlocksForSettings(
 ): MealBlock[] {
   if (!window) return [];
 
-  if (
-    settings.mealProtocolMode === "custom" &&
+  const protocol = resolveMealProtocolContent(
+    settings.mealProtocolMode,
     settings.mealProtocolCustom
-  ) {
-    return buildMealBlocksFromCustomProtocol(
-      window,
-      settings.mealProtocolCustom
-    );
+  );
+
+  if (protocol) {
+    return buildMealBlocksFromCustomProtocol(window, protocol);
   }
 
   return buildLocalizedMealBlocks(window, t);

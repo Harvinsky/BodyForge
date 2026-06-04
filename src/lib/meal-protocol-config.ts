@@ -6,7 +6,19 @@ import {
 } from "@/lib/eating-window";
 import type { MealTaskKey } from "@/lib/meals";
 
-export type MealProtocolMode = "bodyforge" | "custom";
+export const MEAL_PROTOCOL_PRESETS = [
+  "bodyforge",
+  "keto",
+  "vegetarian",
+  "girls",
+  "athlete",
+  "custom",
+] as const;
+
+export type MealProtocolPresetId = (typeof MEAL_PROTOCOL_PRESETS)[number];
+
+/** @deprecated alias */
+export type MealProtocolMode = MealProtocolPresetId;
 
 export type CustomMealSlotFields = {
   label: string;
@@ -32,7 +44,7 @@ function trimField(value: unknown, max = 500): string {
   return value.trim().slice(0, max);
 }
 
-/** Predvolený vlastný protokol — východisko z BodyForge šablóny (SK). */
+/** Východisko pre vlastnú úpravu (BodyForge texty). */
 export const DEFAULT_CUSTOM_MEAL_PROTOCOL: CustomMealProtocol = {
   meal1: {
     label: "Jedlo 1 — Otvorenie okna",
@@ -68,6 +80,145 @@ export const DEFAULT_CUSTOM_MEAL_PROTOCOL: CustomMealProtocol = {
     logHint: "Kalórie → Jedlo 2 → pridaj položky zvlášť.",
   },
 };
+
+export const BUILT_IN_MEAL_PROTOCOLS: Record<
+  Exclude<MealProtocolPresetId, "bodyforge" | "custom">,
+  CustomMealProtocol
+> = {
+  keto: {
+    meal1: {
+      label: "Jedlo 1 — nízkosacharidové",
+      composition:
+        "Vajcia, avokádo, syr alebo losos — minimum sacharidov, vyšší tuk.",
+      side: "Listová zelenina s olivovým olejom.",
+      protocolTip: "Drž sacharidy nízko celé okno — bielkovina + zdravý tuk.",
+      estimatedKcal: "cca 450–600 kcal",
+      realExamples: "Omeleta + avokádo · losos + šalát.",
+      logHint: "Kalórie → Jedlo 1.",
+    },
+    snack: {
+      enabled: true,
+      label: "Snack — tuk / bielkovina",
+      composition: "Orechy, olivy alebo malý jogurt bez cukru.",
+      purpose: "Udržanie ketózy bez cukru.",
+      protocolTip: "Bez ovocia a pečiva medzi jedlami.",
+      estimatedKcal: "cca 150–250 kcal",
+      realExamples: "Mandle · cottage · 85% čokoláda (malá porcia).",
+      logHint: "Kalórie → Snack.",
+    },
+    meal2: {
+      label: "Jedlo 2 — večera keto",
+      composition: "Mäso / ryba + dusená zelenina, bez príloh z obilia.",
+      side: "Maslo alebo olej na zeleninu.",
+      protocolTip: "Posledné jedlo — žiadne sacharidy pred fastingom.",
+      estimatedKcal: "cca 450–550 kcal",
+      realExamples: "Steak + brokolica · treska + špenát.",
+      logHint: "Kalórie → Jedlo 2.",
+    },
+  },
+  vegetarian: {
+    meal1: {
+      label: "Jedlo 1 — rastlinné",
+      composition:
+        "Tofu / tempeh / vajcia / strukoviny + zelenina (doplň B12 podľa potreby).",
+      side: "Celozrnná príloha malá alebo hrsť orechov.",
+      protocolTip: "Kombinuj bielkoviny rastlinného pôvodu v jednej porcii.",
+      estimatedKcal: "cca 400–550 kcal",
+      realExamples: "Tofu stir-fry · šošovica + ryža · omeleta + šalát.",
+      logHint: "Kalórie → Jedlo 1.",
+    },
+    snack: {
+      enabled: true,
+      label: "Snack — orechy / ovocie",
+      composition: "Jogurt, orechy alebo sezónne ovocie.",
+      purpose: "Doplnenie energie medzi jedlami.",
+      protocolTip: "Malá porcia — nie druhé hlavné jedlo.",
+      estimatedKcal: "cca 150–220 kcal",
+      realExamples: "Grécky jogurt · banán · hummus + mrkva.",
+      logHint: "Kalórie → Snack.",
+    },
+    meal2: {
+      label: "Jedlo 2 — večera bez mäsa",
+      composition: "Strukoviny, tofu alebo vajcia + veľa zeleniny.",
+      side: "Ryža / quinoa v menšej porcii.",
+      protocolTip: "Ľahšia večera — dobre stráviteľné pred fastingom.",
+      estimatedKcal: "cca 400–500 kcal",
+      realExamples: "Cícer curry · špagety s cuketou · vajíčková omeleta.",
+      logHint: "Kalórie → Jedlo 2.",
+    },
+  },
+  girls: {
+    meal1: {
+      label: "Jedlo 1 — ľahký štart",
+      composition:
+        "Jogurt, ovsená kaša, vajce alebo smoothie — vyvážená bielkovina bez ťažkosti.",
+      side: "Ovocie alebo hrsť orechov.",
+      protocolTip:
+        "Jemnejší režim — dostatok energie, nie príliš tučné ráno.",
+      estimatedKcal: "cca 350–500 kcal",
+      realExamples: "Grécky jogurt + ovocie · ovsené s bobuľami · omeleta.",
+      logHint: "Kalórie → Jedlo 1.",
+    },
+    snack: {
+      enabled: true,
+      label: "Snack — ľahký",
+      composition: "Ovocie, kefír, malý protein bar alebo hummus s zeleninou.",
+      purpose: "Udržanie energie bez prejedania.",
+      protocolTip: "Malá porcia — nie náhrada hlavného jedla.",
+      estimatedKcal: "cca 120–200 kcal",
+      realExamples: "Jablko · smoothie · cottage s ovocím.",
+      logHint: "Kalórie → Snack.",
+    },
+    meal2: {
+      label: "Jedlo 2 — ľahšia večera",
+      composition:
+        "Ryba / kuracie / tofu + zelenina — menšia príloha, viac šalátu.",
+      side: "Olivový olej alebo avokádo v malom množstve.",
+      protocolTip: "Ľahšia večera — lepší spánok a trávenie.",
+      estimatedKcal: "cca 380–480 kcal",
+      realExamples: "Treska + šalát · bowl s quinoa · zeleninová polievka.",
+      logHint: "Kalórie → Jedlo 2.",
+    },
+  },
+  athlete: {
+    meal1: {
+      label: "Jedlo 1 — energia pred dňom",
+      composition:
+        "Bielkoviny + komplexné sacharidy (ovsené, ryža, vajcia, kuracie).",
+      side: "Ovocie alebo jogurt ak treba doplniť energiu.",
+      protocolTip: "Dostatok sacharidov okolo tréningu — hydratácia.",
+      estimatedKcal: "cca 500–700 kcal",
+      realExamples: "Ovsené + banán · vajcia + toast · kurací wrap.",
+      logHint: "Kalórie → Jedlo 1.",
+    },
+    snack: {
+      enabled: true,
+      label: "Snack — okolo tréningu",
+      composition: "Proteín + sacharid (shake, jogurt, tyčinka, ovocie).",
+      purpose: "Regenerácia a doplnenie glykogénu.",
+      protocolTip: "Do 2 h po tréningu — bielkovina + sacharid.",
+      estimatedKcal: "cca 200–350 kcal",
+      realExamples: "Proteín shake · banán + arašidové maslo.",
+      logHint: "Kalórie → Snack.",
+    },
+    meal2: {
+      label: "Jedlo 2 — regenerácia",
+      composition:
+        "Väčšia porcia bielkovín (mäso / ryba / tofu) + príloha + zelenina.",
+      side: "Dostatok zeleniny a tekutín.",
+      protocolTip: "Večera doplní bielkoviny po dni — nie príliš neskoro.",
+      estimatedKcal: "cca 550–750 kcal",
+      realExamples: "Kurací steak + ryža · ryba + zemiaky · cícer bowl.",
+      logHint: "Kalórie → Jedlo 2.",
+    },
+  },
+};
+
+export function getBuiltInProtocol(
+  preset: Exclude<MealProtocolPresetId, "bodyforge" | "custom">
+): CustomMealProtocol {
+  return BUILT_IN_MEAL_PROTOCOLS[preset];
+}
 
 export function sanitizeCustomMealProtocol(
   raw: unknown
@@ -107,8 +258,15 @@ export function sanitizeCustomMealProtocol(
   };
 }
 
-export function parseMealProtocolMode(value: unknown): MealProtocolMode {
-  return value === "custom" ? "custom" : "bodyforge";
+export function parseMealProtocolMode(value: unknown): MealProtocolPresetId {
+  if (value === "baby") return "girls";
+  if (
+    typeof value === "string" &&
+    (MEAL_PROTOCOL_PRESETS as readonly string[]).includes(value)
+  ) {
+    return value as MealProtocolPresetId;
+  }
+  return "bodyforge";
 }
 
 function slotToBlock(
@@ -160,4 +318,13 @@ export function buildMealBlocksFromCustomProtocol(
   );
 
   return blocks;
+}
+
+export function resolveMealProtocolContent(
+  preset: MealProtocolPresetId,
+  custom: CustomMealProtocol | null
+): CustomMealProtocol | null {
+  if (preset === "bodyforge") return null;
+  if (preset === "custom") return custom;
+  return getBuiltInProtocol(preset);
 }

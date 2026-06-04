@@ -91,6 +91,99 @@
   color-scheme: dark;
 }
 
+[data-theme="girls"] .text-\[\#e8d5a3\],
+[data-theme="girls"] .text-\[\#e8d5a3\]\/90,
+[data-theme="girls"] .text-\[\#e8d5a3\]\/80 {
+  color: var(--gold-light) !important;
+}
+
+[data-theme="girls"] {
+  --background: #faf8f5;
+  --foreground: #3d3548;
+  --card: #fff9fc;
+  --card-foreground: #3d3548;
+  --popover: #ffffff;
+  --popover-foreground: #3d3548;
+  --primary: #e8a0bf;
+  --primary-foreground: #3d2030;
+  --secondary: #f3e8ef;
+  --secondary-foreground: #5c4a58;
+  --muted: #efe6ec;
+  --muted-foreground: #7a6b75;
+  --accent: #d4f0e8;
+  --accent-foreground: #2a5c4a;
+  --destructive: #e57373;
+  --destructive-foreground: #fff;
+  --border: #e8a0bf88;
+  --input: #ffffff;
+  --ring: #e8a0bf;
+  --gold: #e8a0bf;
+  --gold-light: #9d5c78;
+  --gold-dim: #c77d9a;
+  --chart-1: #e8a0bf;
+  --chart-2: #7ec8b8;
+  --chart-3: #9d5c78;
+  color-scheme: light;
+}
+
+[data-theme="forest"] {
+  --background: #0e1410;
+  --foreground: #e8f0e8;
+  --card: #141c16;
+  --card-foreground: #e8f0e8;
+  --popover: #1a241c;
+  --popover-foreground: #e8f0e8;
+  --primary: #4ade80;
+  --primary-foreground: #052e14;
+  --secondary: #1e2a20;
+  --secondary-foreground: #b8d4bc;
+  --muted: #243028;
+  --muted-foreground: #8aa892;
+  --accent: #1a3d28;
+  --accent-foreground: #86efac;
+  --destructive: #f87171;
+  --destructive-foreground: #fff;
+  --border: #4ade8066;
+  --input: #1a241c;
+  --ring: #4ade80;
+  --gold: #4ade80;
+  --gold-light: #86efac;
+  --gold-dim: #22c55e;
+  --chart-1: #4ade80;
+  --chart-2: #22c55e;
+  --chart-3: #15803d;
+  color-scheme: dark;
+}
+
+[data-theme="blossom"] {
+  --background: #1a1218;
+  --foreground: #fce8f0;
+  --card: #241a22;
+  --card-foreground: #fce8f0;
+  --popover: #2c2028;
+  --popover-foreground: #fce8f0;
+  --primary: #f472b6;
+  --primary-foreground: #1a0810;
+  --secondary: #32242c;
+  --secondary-foreground: #e8c4d4;
+  --muted: #3a2a34;
+  --muted-foreground: #c49aae;
+  --accent: #4a2038;
+  --accent-foreground: #fbcfe8;
+  --destructive: #fb7185;
+  --destructive-foreground: #fff;
+  --border: #f472b666;
+  --input: #2c2028;
+  --ring: #f472b6;
+  --gold: #f472b6;
+  --gold-light: #fbcfe8;
+  --gold-dim: #db2777;
+  --chart-1: #f472b6;
+  --chart-2: #db2777;
+  --chart-3: #9d174d;
+  color-scheme: dark;
+}
+
 [data-theme="slate"] {
   --background: #0f1114;
   --foreground: #eceef2;

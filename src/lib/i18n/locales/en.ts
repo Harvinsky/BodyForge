@@ -119,9 +119,15 @@ export const enMessages = {
   protocolSettings: {
     title: "Meal protocol template",
     intro:
-      "Default BodyForge protocol or your own copy for Meal 1, snack and Meal 2. Meal times follow the eating window above.",
-    modeBodyforge: "BodyForge (default)",
-    modeCustom: "Custom protocol",
+      "Pick a template below (compact chips). Meal times follow the eating window above. Custom = edit the text.",
+    presetBodyforge: "BodyForge",
+    presetKeto: "Keto",
+    presetVegetarian: "Veggie",
+    presetGirls: "Girls",
+    presetAthlete: "Sport",
+    presetCustom: "Custom",
+    presetActiveHint: "Template saved.",
+    editCopy: "Edit a copy",
     meal1Section: "Meal 1",
     snackSection: "Snack",
     snackEnabled: "Snack enabled",
@@ -144,6 +150,9 @@ export const enMessages = {
     themeOcean: "Ocean",
     themeEmber: "Ember",
     themeSlate: "Slate",
+    themeGirls: "Girls · pastel",
+    themeForest: "Forest",
+    themeBlossom: "Blossom",
   },
   calories: {
     dailyLimitTitle: "Your daily calorie limit",
