@@ -74,7 +74,7 @@ export function DashboardHeader() {
 
           {isSupabaseConfigured() &&
             (email ? (
-              <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="max-w-[140px] truncate text-[10px] text-muted-foreground sm:max-w-[200px] sm:text-xs">
                   {email}
                 </span>
@@ -91,19 +91,17 @@ export function DashboardHeader() {
                       {t("common.signOut")}
                     </span>
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void handleDeleteAccount()}
-                    disabled={deleting}
-                    className="h-8 border-destructive/40 px-2.5 text-[10px] text-destructive hover:bg-destructive/10 sm:text-xs"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    <span className="sr-only sm:not-sr-only sm:ml-1">
-                      {t("common.deleteAccount")}
-                    </span>
-                  </Button>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleDeleteAccount()}
+                  disabled={deleting}
+                  className="h-6 px-2 text-[9px] text-destructive/70 hover:bg-destructive/10 hover:text-destructive sm:text-[10px]"
+                >
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  {t("common.deleteAccount")}
+                </Button>
               </div>
             ) : (
               <Button
