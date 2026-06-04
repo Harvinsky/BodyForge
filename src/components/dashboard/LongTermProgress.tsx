@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { CardContent, CardTitle } from "@/components/ui/card";
 import { useAppUser } from "@/hooks/use-app-user";
+import { useTheme } from "@/hooks/use-theme";
 import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
@@ -40,7 +41,30 @@ function formatDateShort(iso: string): string {
 
 export function LongTermProgress() {
   const { userId } = useAppUser();
+  const { theme } = useTheme();
   const { t } = useI18n();
+  const isLight = theme === "light";
+  const chartGrid = isLight ? "rgba(28, 21, 16, 0.08)" : "rgba(255,255,255,0.06)";
+  const chartTick = isLight ? "#5c5244" : "#9a9a9a";
+  const tooltipStyle = isLight
+    ? {
+        background: "#ffffff",
+        border: "1px solid #c9a22788",
+        borderRadius: 6,
+        fontFamily: "monospace",
+        fontSize: 11,
+        color: "#1a140e",
+      }
+    : {
+        background: "#1a1a1a",
+        border: "1px solid #c9a22766",
+        borderRadius: 6,
+        fontFamily: "monospace",
+        fontSize: 11,
+      };
+  const tooltipLabelStyle = isLight
+    ? { color: "#5c4208" }
+    : { color: "#e8d5a3" };
   const [range, setRange] = useState<DayRange>(30);
   const [data, setData] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,7 +113,7 @@ export function LongTermProgress() {
               <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
                 {APP_MODULE_PREFIX} · {t("progress.modulePrefix")}
               </p>
-              <CardTitle className="mt-1 font-mono text-base uppercase tracking-widest text-[#e8d5a3]">
+              <CardTitle className="text-title mt-1 font-mono text-base uppercase tracking-widest">
                 {t("progress.title")}
               </CardTitle>
             </div>
@@ -147,22 +171,22 @@ export function LongTermProgress() {
               </p>
               <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     interval={tickInterval}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{ background: "#1a1a1a", border: "1px solid #c9a22766", borderRadius: 6, fontFamily: "monospace", fontSize: 11 }}
-                    labelStyle={{ color: "#e8d5a3" }}
+                    contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
                     formatter={(value) => {
                       const n = typeof value === "number" ? value : 0;
                       return [`${n} kcal`, t("progress.caloriesLabel")];
@@ -186,23 +210,23 @@ export function LongTermProgress() {
               </p>
               <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     interval={tickInterval}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     axisLine={false}
                     tickLine={false}
                     unit="L"
                   />
                   <Tooltip
-                    contentStyle={{ background: "#1a1a1a", border: "1px solid #c9a22766", borderRadius: 6, fontFamily: "monospace", fontSize: 11 }}
-                    labelStyle={{ color: "#e8d5a3" }}
+                    contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
                     formatter={(value) => {
                       const n = typeof value === "number" ? value : 0;
                       return [`${n} L`, t("progress.hydrationLabel")];
@@ -226,23 +250,23 @@ export function LongTermProgress() {
               </p>
               <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     interval={tickInterval}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 9, fontFamily: "monospace", fill: "#9a9a9a" }}
+                    tick={{ fontSize: 9, fontFamily: "monospace", fill: chartTick }}
                     axisLine={false}
                     tickLine={false}
                     unit="m"
                   />
                   <Tooltip
-                    contentStyle={{ background: "#1a1a1a", border: "1px solid #c9a22766", borderRadius: 6, fontFamily: "monospace", fontSize: 11 }}
-                    labelStyle={{ color: "#e8d5a3" }}
+                    contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
                     formatter={(value) => {
                       const n = typeof value === "number" ? value : 0;
                       return [`${n} min`, t("progress.trainingLabel")];

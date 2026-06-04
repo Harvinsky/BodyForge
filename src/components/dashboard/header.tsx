@@ -44,7 +44,7 @@ export function DashboardHeader() {
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <DeerLogo className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" />
             <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold uppercase tracking-[0.12em] text-[#e8d5a3] sm:text-lg sm:tracking-[0.15em]">
+              <h1 className="text-title truncate text-base font-semibold uppercase tracking-[0.12em] sm:text-lg sm:tracking-[0.15em]">
                 {APP_NAME}
               </h1>
               <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
@@ -70,7 +70,7 @@ export function DashboardHeader() {
                     variant="ghost"
                     size="icon"
                     onClick={toggleTheme}
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 border border-primary/30 text-foreground hover:bg-accent"
                     aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                   >
                     {theme === "dark" ? (
@@ -115,7 +115,7 @@ export function DashboardHeader() {
                 <span className="min-w-0 truncate text-muted-foreground">
                   {t("header.period", { range: programRange })}
                 </span>
-                <span className="shrink-0 text-[#e8d5a3]">{timePercent}%</span>
+                <span className="text-title shrink-0">{timePercent}%</span>
               </div>
               <Progress value={timePercent} className="h-2 bg-secondary" />
             </div>
@@ -124,7 +124,7 @@ export function DashboardHeader() {
                 <span className="text-muted-foreground">
                   {t("header.weightToGoal")}
                 </span>
-                <span className="text-[#e8d5a3]">{weightPercent}%</span>
+                <span className="text-title">{weightPercent}%</span>
               </div>
               <Progress value={weightPercent} className="h-2 bg-secondary" />
             </div>
