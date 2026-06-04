@@ -248,7 +248,7 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
                   return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
                 }
               );
-        let newEntry: HydrationLogEntry = {
+        const newEntry: HydrationLogEntry = {
           id: clientId,
           amount_ml: amountMl,
           logged_at: loggedAt,
