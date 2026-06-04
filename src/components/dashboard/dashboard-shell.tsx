@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { WeeklyProgress } from "@/components/dashboard/weekly-progress";
 import { CalendarEvents } from "@/components/dashboard/calendar-events";
@@ -110,33 +109,6 @@ function DashboardContent() {
           </div>
         </div>
       </main>
-      {authReady && email && (
-        <button
-          type="button"
-          onClick={() => void handleDeleteAccount()}
-          disabled={deleting}
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            background: "rgba(239,68,68,0.15)",
-            border: "1px solid rgba(239,68,68,0.5)",
-            color: "#ef4444",
-            borderRadius: "8px",
-            padding: "8px 14px",
-            fontSize: "12px",
-            fontWeight: 500,
-            cursor: "pointer",
-          }}
-        >
-          <Trash2 style={{ width: 14, height: 14 }} />
-          {t("common.deleteAccount")}
-        </button>
-      )}
     </DashboardFrame>
   );
 }
