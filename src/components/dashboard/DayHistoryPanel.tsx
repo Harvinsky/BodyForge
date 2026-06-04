@@ -346,7 +346,7 @@ export function DayHistoryPanel() {
     deleteArchivedPeriod,
   } = useDayHistory();
   const { setLogDate } = useDailyTracker();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [archiveLabel, setArchiveLabel] = useState("");
@@ -457,7 +457,8 @@ export function DayHistoryPanel() {
       days,
       activePeriod.label,
       activePeriod.startDate,
-      activePeriod.endDate
+      activePeriod.endDate,
+      locale
     );
   };
 

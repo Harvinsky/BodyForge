@@ -48,7 +48,7 @@ export function BodyGoalProvider({ children }: { children: React.ReactNode }) {
         supabase
           .from("user_settings")
           .select(
-            "start_weight_kg, goal_weight_kg, current_weight_kg, goal_date, program_start_date, daily_calorie_target, eating_window_start, eating_window_end, hydration_target_liters"
+            "start_weight_kg, goal_weight_kg, current_weight_kg, goal_date, program_start_date, daily_calorie_target, eating_window_start, eating_window_end, hydration_target_liters, meal_protocol_mode, meal_protocol_custom"
           )
           .eq("user_id", userId)
           .maybeSingle(),
@@ -123,6 +123,11 @@ export function BodyGoalProvider({ children }: { children: React.ReactNode }) {
             eating_window_start: next.eatingWindowStart,
             eating_window_end: next.eatingWindowEnd,
             hydration_target_liters: next.hydrationTargetLiters,
+            meal_protocol_mode: next.mealProtocolMode,
+            meal_protocol_custom:
+              next.mealProtocolMode === "custom"
+                ? next.mealProtocolCustom
+                : null,
           },
           { onConflict: "user_id" }
         );

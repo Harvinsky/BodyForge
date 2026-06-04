@@ -29,6 +29,97 @@
   --chart-3: #5c4d18;
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="ocean"] {
+  --background: #0c1218;
+  --foreground: #e8f4fc;
+  --card: #111a22;
+  --card-foreground: #e8f4fc;
+  --popover: #152028;
+  --popover-foreground: #e8f4fc;
+  --primary: #38bdf8;
+  --primary-foreground: #061018;
+  --secondary: #1a2834;
+  --secondary-foreground: #b8d4e8;
+  --muted: #1e2a36;
+  --muted-foreground: #8aa8be;
+  --accent: #1e3a4f;
+  --accent-foreground: #7dd3fc;
+  --destructive: #f87171;
+  --destructive-foreground: #fff;
+  --border: #38bdf866;
+  --input: #152028;
+  --ring: #38bdf8;
+  --gold: #38bdf8;
+  --gold-light: #7dd3fc;
+  --gold-dim: #0284c7;
+  --chart-1: #38bdf8;
+  --chart-2: #0284c7;
+  --chart-3: #0369a1;
+  color-scheme: dark;
+}
+
+[data-theme="ember"] {
+  --background: #14100c;
+  --foreground: #faf0e8;
+  --card: #1c1610;
+  --card-foreground: #faf0e8;
+  --popover: #241c14;
+  --popover-foreground: #faf0e8;
+  --primary: #f97316;
+  --primary-foreground: #1a0c04;
+  --secondary: #2a2018;
+  --secondary-foreground: #e8d0b8;
+  --muted: #302418;
+  --muted-foreground: #b89878;
+  --accent: #4a2810;
+  --accent-foreground: #fdba74;
+  --destructive: #ef4444;
+  --destructive-foreground: #fff;
+  --border: #f9731666;
+  --input: #241c14;
+  --ring: #f97316;
+  --gold: #f97316;
+  --gold-light: #fdba74;
+  --gold-dim: #c2410c;
+  --chart-1: #f97316;
+  --chart-2: #ea580c;
+  --chart-3: #c2410c;
+  color-scheme: dark;
+}
+
+[data-theme="slate"] {
+  --background: #0f1114;
+  --foreground: #eceef2;
+  --card: #171a1f;
+  --card-foreground: #eceef2;
+  --popover: #1c2026;
+  --popover-foreground: #eceef2;
+  --primary: #94a3b8;
+  --primary-foreground: #0f1114;
+  --secondary: #252a32;
+  --secondary-foreground: #c8d0dc;
+  --muted: #2a3038;
+  --muted-foreground: #8892a0;
+  --accent: #334155;
+  --accent-foreground: #cbd5e1;
+  --destructive: #f87171;
+  --destructive-foreground: #fff;
+  --border: #64748b66;
+  --input: #1c2026;
+  --ring: #94a3b8;
+  --gold: #94a3b8;
+  --gold-light: #cbd5e1;
+  --gold-dim: #64748b;
+  --chart-1: #94a3b8;
+  --chart-2: #64748b;
+  --chart-3: #475569;
+  color-scheme: dark;
+}
+
 [data-theme="light"] {
   --background: #f8f4ec;
   --foreground: #1a140e;

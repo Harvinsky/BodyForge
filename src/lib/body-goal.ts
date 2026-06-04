@@ -3,6 +3,12 @@ import { format, parseISO } from "date-fns";
 import { dateFnsLocale } from "@/lib/i18n/format";
 import type { AppLocale } from "@/lib/i18n/types";
 import { normalizeEatingWindow } from "@/lib/eating-window";
+import {
+  parseMealProtocolMode,
+  sanitizeCustomMealProtocol,
+  type CustomMealProtocol,
+  type MealProtocolMode,
+} from "@/lib/meal-protocol-config";
 
 
 
@@ -25,6 +31,10 @@ export interface BodyGoalSettings {
   eatingWindowEnd: string | null;
 
   hydrationTargetLiters: number | null;
+
+  mealProtocolMode: MealProtocolMode;
+
+  mealProtocolCustom: CustomMealProtocol | null;
 
 }
 
@@ -51,6 +61,10 @@ export const EMPTY_BODY_GOAL: BodyGoalSettings = {
   eatingWindowEnd: null,
 
   hydrationTargetLiters: null,
+
+  mealProtocolMode: "bodyforge",
+
+  mealProtocolCustom: null,
 
 };
 
@@ -429,6 +443,8 @@ export function settingsFromDbRow(row: Record<string, unknown>): BodyGoalSetting
     eatingWindowStart: normalizeTimeFromDb(row.eating_window_start),
     eatingWindowEnd: normalizeTimeFromDb(row.eating_window_end),
     hydrationTargetLiters: parseHydrationFromDb(row.hydration_target_liters),
+    mealProtocolMode: parseMealProtocolMode(row.meal_protocol_mode),
+    mealProtocolCustom: sanitizeCustomMealProtocol(row.meal_protocol_custom),
   });
 }
 

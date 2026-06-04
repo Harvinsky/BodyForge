@@ -16,6 +16,7 @@ import {
 } from "@/lib/body-goal";
 import { DailyCalorieTargetControl } from "@/components/dashboard/daily-calorie-target-control";
 import { EatingWindowControl } from "@/components/dashboard/EatingWindowControl";
+import { MealProtocolSettings } from "@/components/dashboard/MealProtocolSettings";
 import { getGoalProgressPercent } from "@/lib/goal";
 import { useI18n } from "@/providers/locale-provider";
 
@@ -194,6 +195,8 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
       <div className="mt-4">
         <DailyCalorieTargetControl />
       </div>
+
+      <MealProtocolSettings />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button

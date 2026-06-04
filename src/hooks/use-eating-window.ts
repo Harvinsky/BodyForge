@@ -11,7 +11,7 @@ import {
   type EatingWindow,
 } from "@/lib/eating-window";
 import { buildBodyforgeSchedule } from "@/lib/bodyforge-schedule";
-import { buildLocalizedMealBlocks } from "@/lib/i18n/meal-plan-blocks";
+import { getMealBlocksForSettings } from "@/lib/meal-blocks-for-settings";
 import type { MessageKey, TranslateParams } from "@/lib/i18n/types";
 import { useI18n } from "@/providers/locale-provider";
 
@@ -40,7 +40,7 @@ export function useEatingWindow() {
         fastingLabel: "—",
         durationHours: 0,
         mealTimes: null,
-        mealBlocks: [] as ReturnType<typeof buildLocalizedMealBlocks>,
+        mealBlocks: [] as ReturnType<typeof getMealBlocksForSettings>,
         bodyforgeSchedule: [] as ReturnType<typeof buildBodyforgeSchedule>,
       };
     }
@@ -57,8 +57,17 @@ export function useEatingWindow() {
       fastingLabel: formatFastingPeriodLabel(window),
       durationHours: eatingWindowDurationHours(window),
       mealTimes,
-      mealBlocks: buildLocalizedMealBlocks(window, t),
-      bodyforgeSchedule: buildBodyforgeSchedule(window),
+      mealBlocks: getMealBlocksForSettings(settings, window, t),
+      bodyforgeSchedule: buildBodyforgeSchedule(
+        window,
+        getMealBlocksForSettings(settings, window, t)
+      ),
     };
-  }, [settings.eatingWindowStart, settings.eatingWindowEnd, t]);
+  }, [
+    settings.eatingWindowStart,
+    settings.eatingWindowEnd,
+    settings.mealProtocolMode,
+    settings.mealProtocolCustom,
+    t,
+  ]);
 }

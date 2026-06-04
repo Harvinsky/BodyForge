@@ -8,10 +8,7 @@ import {
   isNativeApp,
   signInWithGoogleNative,
 } from "@/lib/native-google-auth";
-import {
-  isLocalhostBrowser,
-  signInWithGoogleBrowser,
-} from "@/lib/google-login-strategy";
+import { signInWithGoogleBrowser } from "@/lib/google-login-strategy";
 import { AuthScreenLayout } from "@/components/auth/auth-screen-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,7 +56,6 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const supabase = createClient();
   const nativeApp = isNativeApp();
-  const localhostBrowser = isLocalhostBrowser();
   const { t } = useI18n();
 
   const authError = searchParams.get("error");
@@ -158,13 +154,6 @@ function LoginForm() {
             <GoogleIcon />
             {t("login.google")}
           </Button>
-          <p className="text-center text-[11px] leading-snug text-muted-foreground">
-            {nativeApp
-              ? t("login.nativeHint")
-              : localhostBrowser
-                ? t("login.browserHint")
-                : t("login.browserLanHint")}
-          </p>
         </div>
 
         <div className="relative">

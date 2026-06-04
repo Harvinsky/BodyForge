@@ -14,6 +14,7 @@ import { useBodyGoal } from "@/hooks/use-body-goal";
 import { useDailyTracker } from "@/hooks/use-daily-tracker";
 import { useHydration } from "@/hooks/use-hydration";
 import { eatingWindowFromSettings } from "@/lib/eating-window";
+import { getMealBlocksForSettings } from "@/lib/meal-blocks-for-settings";
 import {
   buildNotificationPlan,
   type PlannedNotification,
@@ -108,6 +109,16 @@ export function NotificationProvider({
   const { settings } = useBodyGoal();
   const eatingWindow = eatingWindowFromSettings(settings);
   const { t } = useI18n();
+  const mealBlocks = useMemo(
+    () => getMealBlocksForSettings(settings, eatingWindow, t),
+    [
+      settings,
+      eatingWindow,
+      settings.mealProtocolMode,
+      settings.mealProtocolCustom,
+      t,
+    ]
+  );
 
   const todayKey = format(new Date(), "yyyy-MM-dd");
 
@@ -122,8 +133,17 @@ export function NotificationProvider({
         mealLeadMinutes: 30,
         waterRemindersPerDay: 3,
         eatingWindow,
+        mealBlocks,
       }),
-    [events, totalMl, goalMl, tasks.is_fasting_day, settings.eatingWindowStart, settings.eatingWindowEnd]
+    [
+      events,
+      totalMl,
+      goalMl,
+      tasks.is_fasting_day,
+      settings.eatingWindowStart,
+      settings.eatingWindowEnd,
+      mealBlocks,
+    ]
   );
 
   const schedule: PlannedNotification[] = todayPlan;

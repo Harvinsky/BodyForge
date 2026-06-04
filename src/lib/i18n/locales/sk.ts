@@ -68,10 +68,6 @@ export const skMessages = {
     loadingApp: "Načítavam {app}…",
     oauthInterrupted:
       "Prihlásenie sa prerušilo — skús znova v Chrome na rovnakej adrese appky.",
-    nativeHint: "Natívne Google prihlásenie na tomto zariadení (Android appka).",
-    browserHint: "Na PC sa Google otvorí v prehliadači na adrese appky.",
-    browserLanHint:
-      "Na mobile / cez LAN IP ide prihlásenie cez Supabase — pridaj túto URL v Supabase → Redirect URLs.",
   },
   authCallback: {
     verifying: "Overujem prihlásenie…",
@@ -120,6 +116,35 @@ export const skMessages = {
     invalidRange: "Koniec musí byť po začiatku. Okno: 4–14 hodín denne.",
     compact: "Jedálne okno {range} · fasting {fasting}",
     labelHours: "{hours}h okno",
+  },
+  protocolSettings: {
+    title: "Šablóna jedálneho protokolu",
+    intro:
+      "Predvolený BodyForge protokol alebo vlastné texty pre Jedlo 1, snack a Jedlo 2. Časy jedál sa riadia jedálnym oknom vyššie.",
+    modeBodyforge: "BodyForge (predvolené)",
+    modeCustom: "Vlastný protokol",
+    meal1Section: "Jedlo 1",
+    snackSection: "Snack",
+    snackEnabled: "Zapnutý snack",
+    meal2Section: "Jedlo 2",
+    fieldLabel: "Názov v pláne",
+    fieldComposition: "Odporúčané zloženie",
+    fieldSide: "Príloha / doplnok",
+    fieldPurpose: "Účel",
+    fieldTip: "Tip protokolu",
+    fieldKcal: "Orientačné kcal",
+    fieldExamples: "Reálne príklady",
+    fieldLogHint: "Ako zapísať v Kalóriách",
+    resetDefault: "Obnoviť predvolené texty",
+    save: "Uložiť protokol",
+  },
+  appearance: {
+    themeLabel: "Vzhľad aplikácie",
+    themeDark: "BodyForge tmavý",
+    themeLight: "Svetlý",
+    themeOcean: "Oceán",
+    themeEmber: "Ember",
+    themeSlate: "Slate",
   },
   calories: {
     dailyLimitTitle: "Tvoj denný limit kalórií",
@@ -392,7 +417,7 @@ export const skMessages = {
     stepsBurned: "Kroky a spálené",
     syncPhone: "Sync z telefónu",
     stepsHint:
-      "Kroky z Health Connect. Pri prvom spustení povol prístup ku krokom.",
+      "Kroky z Health Connect (dnes + doplnenie do Histórie v Android appke). Pri prvom spustení povol prístup ku krokom.",
     stepsCount: "Kroky:",
     burnedEst: "Spálené (odhad):",
     burnedBreakdown:
@@ -488,7 +513,7 @@ export const skMessages = {
     confirmDeleteArchiveData:
       "Naozaj vymazať aj kalórie, vodu a tréningy z tohto obdobia?",
     csvHint:
-      "Klikni na riadok pre detail. CSV stiahneš do priečinka Stiahnuté / Downloads — otvor v Exceli alebo Google Tabuľkách.",
+      "CSV: jeden riadok = jeden deň, skupiny stĺpcov sú oddelené prázdnym stĺpcom. V Exceli zapni „Zalomiť text“ pri jedlách. Oddeľovač je bodkočiarka (;).",
     programDefault: "Program {date}",
     currentProgram: "Aktuálny program · {start} – {end}",
     customRangeLabel: "Vlastný rozsah · {start} – {end}",

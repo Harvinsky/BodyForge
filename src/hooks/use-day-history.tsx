@@ -46,6 +46,7 @@ import {
   formatHistoryDayLabel,
   type ProgramPeriod,
 } from "@/lib/program-periods";
+import { useHistoryStepsBackfill } from "@/hooks/use-history-steps-backfill";
 
 interface DayHistoryContextValue {
   days: DayHistoryRecord[];
@@ -236,6 +237,20 @@ export function DayHistoryProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (authReady && activePeriod) void refresh();
   }, [authReady, activePeriod, refresh]);
+
+  const historyRangeEnd = activePeriod
+    ? clampRangeEnd(activePeriod.startDate, activePeriod.endDate, today)
+    : undefined;
+
+  useHistoryStepsBackfill(
+    supabase,
+    userId,
+    authReady,
+    activePeriod?.startDate,
+    historyRangeEnd,
+    getEffectiveWeightKg(settings) ?? 0,
+    refresh
+  );
 
   useEffect(() => {
     setCustomStart(settings.programStartDate ?? "");

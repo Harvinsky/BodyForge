@@ -67,10 +67,6 @@ export const enMessages = {
     loadingApp: "Loading {app}…",
     oauthInterrupted:
       "Sign-in was interrupted — try again in Chrome at the same app URL.",
-    nativeHint: "Native Google sign-in on this device (Android app).",
-    browserHint: "On PC, Google opens in the browser at your app address.",
-    browserLanHint:
-      "On mobile / LAN IP, login goes via Supabase (public domain) — add this URL in Supabase → Redirect URLs.",
   },
   authCallback: {
     verifying: "Verifying sign-in…",
@@ -119,6 +115,35 @@ export const enMessages = {
     invalidRange: "End must be after start. Window: 4–14 hours per day.",
     compact: "Eating window {range} · fasting {fasting}",
     labelHours: "{hours}h window",
+  },
+  protocolSettings: {
+    title: "Meal protocol template",
+    intro:
+      "Default BodyForge protocol or your own copy for Meal 1, snack and Meal 2. Meal times follow the eating window above.",
+    modeBodyforge: "BodyForge (default)",
+    modeCustom: "Custom protocol",
+    meal1Section: "Meal 1",
+    snackSection: "Snack",
+    snackEnabled: "Snack enabled",
+    meal2Section: "Meal 2",
+    fieldLabel: "Label in plan",
+    fieldComposition: "Suggested composition",
+    fieldSide: "Side / add-on",
+    fieldPurpose: "Purpose",
+    fieldTip: "Protocol tip",
+    fieldKcal: "Approx. kcal",
+    fieldExamples: "Real-world examples",
+    fieldLogHint: "How to log in Calories",
+    resetDefault: "Reset to default text",
+    save: "Save protocol",
+  },
+  appearance: {
+    themeLabel: "App appearance",
+    themeDark: "BodyForge dark",
+    themeLight: "Light",
+    themeOcean: "Ocean",
+    themeEmber: "Ember",
+    themeSlate: "Slate",
   },
   calories: {
     dailyLimitTitle: "Your daily calorie limit",
@@ -388,7 +413,7 @@ export const enMessages = {
     stepsBurned: "Steps & burned",
     syncPhone: "Sync from phone",
     stepsHint:
-      "Steps load from Health Connect. Allow step access on first launch.",
+      "Steps from Health Connect (today + backfill in History on the Android app). Allow step access on first launch.",
     stepsCount: "Steps:",
     burnedEst: "Burned (est.):",
     burnedBreakdown:
@@ -482,7 +507,7 @@ export const enMessages = {
     confirmDeleteArchiveData:
       "Really delete calories, water and training from this period?",
     csvHint:
-      "Click a row for details. CSV downloads to your Downloads folder — open in Excel or Google Sheets.",
+      "CSV: one row per day; column groups are separated by a blank column. In Excel, turn on Wrap text for meal columns. Separator is semicolon (;).",
     programDefault: "Program {date}",
     currentProgram: "Current program · {start} – {end}",
     customRangeLabel: "Custom range · {start} – {end}",

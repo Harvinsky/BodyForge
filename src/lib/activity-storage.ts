@@ -20,6 +20,15 @@ function trainingKey(userId: string | null, logDate: string): string {
   return `${LOCAL_TRAINING_PREFIX}${localScope(userId)}:${logDate}`;
 }
 
+export function saveLocalActivityMetrics(
+  userId: string | null,
+  logDate: string,
+  metrics: StoredActivityMetrics
+): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(activityKey(userId, logDate), JSON.stringify(metrics));
+}
+
 export function loadLocalActivityMetrics(
   userId: string | null,
   logDate: string

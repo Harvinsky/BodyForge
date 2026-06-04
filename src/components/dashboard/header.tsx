@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, LogOut, Moon, Sun } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { DeerLogo } from "@/components/dashboard/deer-logo";
 import { NotificationsBellMenu } from "@/components/dashboard/notifications-bell-menu";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/use-theme";
+import { ThemePicker } from "@/components/dashboard/theme-picker";
 import { Progress } from "@/components/ui/progress";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { APP_NAME } from "@/lib/brand";
@@ -23,7 +23,6 @@ import { useI18n } from "@/providers/locale-provider";
 export function DashboardHeader() {
   const { email, signOut } = useAppUser();
   const { settings } = useBodyGoal();
-  const { theme, toggle: toggleTheme } = useTheme();
   const { t, locale } = useI18n();
   const configured = isBodyGoalConfigured(settings);
   const timePercent = getGoalProgressPercent(settings);
@@ -66,19 +65,7 @@ export function DashboardHeader() {
                   {email}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleTheme}
-                    className="h-8 w-8 border border-primary/30 text-foreground hover:bg-accent"
-                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                  >
-                    {theme === "dark" ? (
-                      <Sun className="h-3.5 w-3.5" />
-                    ) : (
-                      <Moon className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
+                  <ThemePicker />
                   <NotificationsBellMenu />
                   <Button
                     variant="outline"
@@ -94,17 +81,20 @@ export function DashboardHeader() {
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="h-8 shrink-0 border-primary/40"
-              >
-                <Link href="/login">
-                  <LogIn className="h-3 w-3" />
-                  {t("common.signIn")}
-                </Link>
-              </Button>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <ThemePicker />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="h-8 border-primary/40"
+                >
+                  <Link href="/login">
+                    <LogIn className="h-3 w-3" />
+                    {t("common.signIn")}
+                  </Link>
+                </Button>
+              </div>
             ))}
         </div>
 

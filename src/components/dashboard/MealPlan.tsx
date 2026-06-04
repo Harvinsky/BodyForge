@@ -21,7 +21,6 @@ import { APP_MODULE_PREFIX } from "@/lib/brand";
 import type { MealBlock } from "@/lib/meal-plan-protocol";
 import {
   activeMealBlockId,
-  buildLocalizedMealBlocks,
 } from "@/lib/i18n/meal-plan-blocks";
 import { EatingWindowControl } from "@/components/dashboard/EatingWindowControl";
 import { useI18n } from "@/providers/locale-provider";
@@ -262,14 +261,14 @@ function MealBlockCard({
 export function MealPlan() {
   const { tasks, toggleMeal, syncing, loading } = useDailyTracker();
   const { logs, mealCalories } = useCalories();
-  const { window: eatingWindow, label, rangeLabel } = useEatingWindow();
+  const {
+    window: eatingWindow,
+    label,
+    rangeLabel,
+    mealBlocks,
+  } = useEatingWindow();
   const { t } = useI18n();
   const [windowClosed, setWindowClosed] = useState(false);
-
-  const mealBlocks = useMemo(
-    () => (eatingWindow ? buildLocalizedMealBlocks(eatingWindow, t) : []),
-    [eatingWindow, t]
-  );
 
   useEffect(() => {
     const update = () =>

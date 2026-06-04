@@ -1,5 +1,5 @@
 import { HYDRATION_DEADLINE_HOUR } from "@/lib/hydration";
-import { buildMealPlanBlocks } from "@/lib/meal-plan-protocol";
+import { buildMealPlanBlocks, type MealBlock } from "@/lib/meal-plan-protocol";
 import {
   DEFAULT_EATING_WINDOW,
   formatEatingWindowLabel,
@@ -40,11 +40,14 @@ function mealShortLabel(id: string): string {
   return "Jedlo";
 }
 
-function buildMealSlots(window: EatingWindow): BodyforgeScheduleSlot[] {
+function buildMealSlots(
+  window: EatingWindow,
+  mealBlocks: MealBlock[]
+): BodyforgeScheduleSlot[] {
   const slots: BodyforgeScheduleSlot[] = [];
   const endHour = hourFromTime(window.end);
 
-  for (const block of buildMealPlanBlocks(window)) {
+  for (const block of mealBlocks) {
     const mealMin = parseTimeToMinutes(block.time);
     const hour = hourFromTime(block.time);
     const short = mealShortLabel(block.id);
@@ -150,10 +153,12 @@ function buildProtocolSlots(window: EatingWindow): BodyforgeScheduleSlot[] {
 }
 
 export function buildBodyforgeSchedule(
-  window: EatingWindow = DEFAULT_EATING_WINDOW
+  window: EatingWindow = DEFAULT_EATING_WINDOW,
+  mealBlocks?: MealBlock[]
 ): BodyforgeScheduleSlot[] {
+  const blocks = mealBlocks ?? buildMealPlanBlocks(window);
   return [
-    ...buildMealSlots(window),
+    ...buildMealSlots(window, blocks),
     ...buildWaterGridSlots(window),
     ...buildProtocolSlots(window),
   ];

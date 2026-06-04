@@ -11,7 +11,7 @@ import {
 
 import { HYDRATION_GOAL_ML } from "@/lib/hydration";
 
-import { buildMealPlanBlocks } from "@/lib/meal-plan-protocol";
+import { buildMealPlanBlocks, type MealBlock } from "@/lib/meal-plan-protocol";
 
 import type { CalendarEvent } from "@/lib/types";
 
@@ -50,6 +50,8 @@ export interface NotificationPlanInput {
   waterRemindersPerDay?: number;
 
   eatingWindow?: EatingWindow | null;
+
+  mealBlocks?: MealBlock[];
 
 }
 
@@ -276,7 +278,9 @@ export function buildNotificationPlan(
     const windowRange = formatEatingWindowRange(window);
     const endMin = parseTimeToMinutes(window.end);
 
-    for (const block of buildMealPlanBlocks(window)) {
+    const blocks = input.mealBlocks ?? buildMealPlanBlocks(window);
+
+    for (const block of blocks) {
 
       const mealMin = parseTimeToMinutes(block.time);
 
