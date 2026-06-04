@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardTitle } from "@/components/ui/card";
 import { useAppUser } from "@/hooks/use-app-user";
 import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
@@ -78,14 +78,14 @@ export function LongTermProgress() {
   const tickInterval = range === 90 ? 6 : 2;
 
   return (
-    <Card className="harvin-panel overflow-hidden">
-      <CardHeader className="border-b border-primary/20 pb-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
+    <details className="group harvin-panel overflow-hidden rounded-xl border border-primary/25">
+      <summary className="cursor-pointer list-none border-b border-primary/20 px-4 py-3.5 sm:px-5 sm:py-4 marker:content-none [&::-webkit-details-marker]:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-primary/50 bg-primary/10">
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
                 {APP_MODULE_PREFIX} · {t("progress.modulePrefix")}
               </p>
@@ -95,27 +95,42 @@ export function LongTermProgress() {
             </div>
           </div>
 
-          <div className="flex gap-1">
-            {([30, 90] as DayRange[]).map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setRange(d)}
-                className={cn(
-                  "border px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
-                  range === d
-                    ? "border-primary bg-primary/20 text-primary"
-                    : "border-primary/30 text-muted-foreground hover:border-primary/60 hover:text-foreground"
-                )}
-              >
-                {d === 30 ? t("progress.30days") : t("progress.90days")}
-              </button>
-            ))}
+          <div className="flex shrink-0 items-center gap-2">
+            <div
+              className="flex gap-1"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              {([30, 90] as DayRange[]).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setRange(d);
+                  }}
+                  className={cn(
+                    "border px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+                    range === d
+                      ? "border-primary bg-primary/20 text-primary"
+                      : "border-primary/30 text-muted-foreground hover:border-primary/60 hover:text-foreground"
+                  )}
+                >
+                  {d === 30 ? t("progress.30days") : t("progress.90days")}
+                </button>
+              ))}
+            </div>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground group-open:hidden">
+              {t("common.expand")}
+            </span>
+            <span className="hidden font-mono text-[10px] uppercase tracking-wider text-muted-foreground group-open:inline">
+              {t("common.collapse")}
+            </span>
           </div>
         </div>
-      </CardHeader>
+      </summary>
 
-      <CardContent className="space-y-6 p-4 sm:p-6">
+      <CardContent className="space-y-6 border-t border-primary/15 p-4 sm:p-6">
         {loading && (
           <p className="py-4 text-center font-mono text-sm text-muted-foreground">
             {t("common.loading")}
@@ -257,6 +272,6 @@ export function LongTermProgress() {
           </p>
         )}
       </CardContent>
-    </Card>
+    </details>
   );
 }
