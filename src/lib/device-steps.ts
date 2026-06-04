@@ -1,6 +1,5 @@
 import { Capacitor } from "@capacitor/core";
 import { endOfDay, format, startOfDay } from "date-fns";
-import { HealthConnect } from "capacitor-health-connect";
 
 export type StepSyncSource =
   | "health_connect"
@@ -17,6 +16,7 @@ export type StepSyncResult = {
 const LAST_SYNC_KEY = "bodyforge-steps-last-sync";
 
 async function sumTodayStepsFromHealthConnect(): Promise<StepSyncResult> {
+  const { HealthConnect } = await import("capacitor-health-connect");
   const { availability } = await HealthConnect.checkAvailability();
 
   if (availability === "NotInstalled") {
