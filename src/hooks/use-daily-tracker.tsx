@@ -10,8 +10,12 @@ import {
 } from "react";
 import { format, subDays } from "date-fns";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { dateFnsLocale } from "@/lib/i18n/format";
+import type { AppLocale } from "@/lib/i18n/types";
+import { useI18n } from "@/providers/locale-provider";
 import { withTimeout } from "@/lib/fetch-timeout";
 import { useAppUser } from "@/hooks/use-app-user";
+import { useBodyGoal } from "@/hooks/use-body-goal";
 import {
   calculateCompletion,
   countCompletedTasks,
@@ -24,15 +28,21 @@ import {
 } from "@/lib/types";
 import {
   type HabitKey,
+  isHabitDone,
   waterWeekPercent,
   weekHabitSuccess,
 } from "@/lib/habits";
-import { hydrationFlagsFromMl } from "@/lib/hydration";
+import { mergeHydrationTaskFlags } from "@/lib/hydration";
 import {
   type MealTaskKey,
   rowToDailyTasks,
   tasksWithMealUpdate,
 } from "@/lib/meals";
+import { planRollingDayDates } from "@/lib/plan-days";
+import {
+  DAY_HISTORY_CHANGED,
+  dayHistoryChangedIncludesToday,
+} from "@/lib/day-history-events";
 
 export interface WeekColumn {
   weekIndex: number;
@@ -40,29 +50,36 @@ export interface WeekColumn {
   habits: Record<HabitKey, boolean>;
 }
 
+/** Jeden deň v týždennom prehľade (posledných 7 dní). */
+export interface DayHabitColumn {
+  date: string;
+  label: string;
+  isToday: boolean;
+  habits: Record<HabitKey, boolean>;
+}
+
 const LOCAL_STORAGE_PREFIX = "t800-daily-log-";
 const SUPABASE_TIMEOUT_MS = 12_000;
 
-const EMPTY_WEEK_COLUMNS: WeekColumn[] = [1, 2, 3, 4].map((n) => ({
-  weekIndex: n,
-  label: `Week ${n}`,
-  habits: {
-    fasting: false,
-    water: false,
-    vacuum: false,
-    night: false,
-  },
-}));
+const EMPTY_DAY_COLUMNS: DayHabitColumn[] = [];
 
 function getTodayDate(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
 
-function loadLocalTasks(date: string): DailyTasks {
+function localScope(userId: string | null): string {
+  return userId ? `user:${userId}` : "anon";
+}
+
+function localKey(userId: string | null, date: string): string {
+  return `${LOCAL_STORAGE_PREFIX}${localScope(userId)}:${date}`;
+}
+
+function loadLocalTasks(userId: string | null, date: string): DailyTasks {
   if (typeof window === "undefined") return emptyDailyTasks();
 
   try {
-    const stored = localStorage.getItem(`${LOCAL_STORAGE_PREFIX}${date}`);
+    const stored = localStorage.getItem(localKey(userId, date));
     if (stored) {
       return { ...emptyDailyTasks(), ...JSON.parse(stored) };
     }
@@ -72,8 +89,12 @@ function loadLocalTasks(date: string): DailyTasks {
   return emptyDailyTasks();
 }
 
-function saveLocalTasks(date: string, tasks: DailyTasks): void {
-  localStorage.setItem(`${LOCAL_STORAGE_PREFIX}${date}`, JSON.stringify(tasks));
+function saveLocalTasks(
+  userId: string | null,
+  date: string,
+  tasks: DailyTasks
+): void {
+  localStorage.setItem(localKey(userId, date), JSON.stringify(tasks));
 }
 
 interface DailyTrackerContextValue {
@@ -88,6 +109,7 @@ interface DailyTrackerContextValue {
   totalTasks: number;
   progressHistory: ProgressDay[];
   weekColumns: WeekColumn[];
+  dayColumns: DayHabitColumn[];
   waterWeekPercent: number;
   loading: boolean;
   syncing: boolean;
@@ -107,18 +129,36 @@ export function DailyTrackerProvider({
   const [tasks, setTasks] = useState<DailyTasks>(emptyDailyTasks);
   const [progressHistory, setProgressHistory] = useState<ProgressDay[]>([]);
   const [weekColumns, setWeekColumns] =
-    useState<WeekColumn[]>(EMPTY_WEEK_COLUMNS);
+    useState<WeekColumn[]>([]);
+  const [dayColumns, setDayColumns] =
+    useState<DayHabitColumn[]>(EMPTY_DAY_COLUMNS);
   const [waterWeekPct, setWaterWeekPct] = useState(0);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [logDate] = useState(getTodayDate);
+  const [logDate, setLogDate] = useState(getTodayDate);
   const { userId, authReady } = useAppUser();
+  const { settings: bodyGoal } = useBodyGoal();
+  const { locale } = useI18n();
 
   const supabase = useMemo(() => createClient(), []);
 
+  // Detekcia zmeny dňa (po polnoci) — resetuje logDate
+  useEffect(() => {
+    const check = () => {
+      const today = getTodayDate();
+      setLogDate((prev) => (prev !== today ? today : prev));
+    };
+    // Skontroluj každú minútu
+    const interval = setInterval(check, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const buildProgressHistory = useCallback(
-    async (uid: string | null) => {
+    async (uid: string | null, programStartDate: string | null, appLocale: AppLocale) => {
+      const dateLoc = dateFnsLocale(appLocale);
       const byDate = new Map<string, DailyTasks>();
+      const todayStr = getTodayDate();
+      const planDays = planRollingDayDates(programStartDate, 7);
 
       if (uid && isSupabaseConfigured()) {
         try {
@@ -143,21 +183,19 @@ export function DailyTrackerProvider({
       }
 
       const tasksFor = (dateStr: string): DailyTasks =>
-        byDate.get(dateStr) ?? loadLocalTasks(dateStr);
+        byDate.get(dateStr) ?? loadLocalTasks(uid, dateStr);
 
-      const days: ProgressDay[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = subDays(new Date(), i);
+      const days: ProgressDay[] = planDays.map((date) => {
         const dateStr = format(date, "yyyy-MM-dd");
         const dayTasks = tasksFor(dateStr);
-        days.push({
+        return {
           date: dateStr,
-          label: format(date, "EEE"),
+          label: format(date, "EEE", { locale: dateLoc }),
           completion: calculateCompletion(dayTasks),
           completed: countCompletedTasks(dayTasks),
           total: TOTAL_DAILY_TASKS,
-        });
-      }
+        };
+      });
       setProgressHistory(days);
 
       const weekCols: WeekColumn[] = [];
@@ -173,19 +211,31 @@ export function DailyTrackerProvider({
           habits: {
             fasting: weekHabitSuccess(weekDays, "fasting"),
             water: weekHabitSuccess(weekDays, "water"),
-            vacuum: weekHabitSuccess(weekDays, "vacuum"),
-            night: weekHabitSuccess(weekDays, "night"),
+            training: weekHabitSuccess(weekDays, "training"),
           },
         });
       }
       setWeekColumns(weekCols);
 
-      const currentWeekDays: DailyTasks[] = [];
-      for (let d = 6; d >= 0; d--) {
-        currentWeekDays.push(
-          tasksFor(format(subDays(new Date(), d), "yyyy-MM-dd"))
-        );
-      }
+      const dayCols: DayHabitColumn[] = planDays.map((date) => {
+        const dateStr = format(date, "yyyy-MM-dd");
+        const dayTasks = tasksFor(dateStr);
+        return {
+          date: dateStr,
+          label: format(date, "EEE d.M.", { locale: dateLoc }),
+          isToday: dateStr === todayStr,
+          habits: {
+            fasting: isHabitDone(dayTasks, "fasting"),
+            water: isHabitDone(dayTasks, "water"),
+            training: isHabitDone(dayTasks, "training"),
+          },
+        };
+      });
+      setDayColumns(dayCols);
+
+      const currentWeekDays = planDays.map((date) =>
+        tasksFor(format(date, "yyyy-MM-dd"))
+      );
       setWaterWeekPct(waterWeekPercent(currentWeekDays));
     },
     [supabase]
@@ -213,21 +263,21 @@ export function DailyTrackerProvider({
             );
             if (!cancelled) {
               setTasks(
-                data ? rowToDailyTasks(data) : loadLocalTasks(logDate)
+                data ? rowToDailyTasks(data) : loadLocalTasks(userId, logDate)
               );
             }
           } catch {
-            if (!cancelled) setTasks(loadLocalTasks(logDate));
+            if (!cancelled) setTasks(loadLocalTasks(userId, logDate));
           }
         } else if (!cancelled) {
-          setTasks(loadLocalTasks(logDate));
+          setTasks(loadLocalTasks(userId, logDate));
         }
       } finally {
         if (!cancelled) setLoading(false);
       }
 
       if (!cancelled) {
-        void buildProgressHistory(userId);
+        void buildProgressHistory(userId, bodyGoal.programStartDate, locale);
       }
     }
 
@@ -235,15 +285,61 @@ export function DailyTrackerProvider({
     return () => {
       cancelled = true;
     };
-  }, [authReady, userId, supabase, logDate, buildProgressHistory]);
+  }, [authReady, userId, supabase, logDate, buildProgressHistory, bodyGoal.programStartDate, locale]);
+
+  useEffect(() => {
+    const reloadToday = async () => {
+      if (userId && isSupabaseConfigured()) {
+        try {
+          const { data } = await withTimeout(
+            supabase
+              .from("daily_logs")
+              .select("*")
+              .eq("user_id", userId)
+              .eq("log_date", logDate)
+              .maybeSingle(),
+            8_000
+          );
+          setTasks(
+            data ? rowToDailyTasks(data) : loadLocalTasks(userId, logDate)
+          );
+        } catch {
+          setTasks(loadLocalTasks(userId, logDate));
+        }
+      } else {
+        setTasks(loadLocalTasks(userId, logDate));
+      }
+      void buildProgressHistory(userId, bodyGoal.programStartDate, locale);
+    };
+
+    const onHistory = (event: Event) => {
+      const dates =
+        (event as CustomEvent<{ dates?: string[] }>).detail?.dates ?? [];
+      if (dayHistoryChangedIncludesToday(dates, logDate)) {
+        void reloadToday();
+      }
+    };
+    window.addEventListener(DAY_HISTORY_CHANGED, onHistory);
+    return () => window.removeEventListener(DAY_HISTORY_CHANGED, onHistory);
+  }, [
+    userId,
+    supabase,
+    logDate,
+    buildProgressHistory,
+    bodyGoal.programStartDate,
+    locale,
+  ]);
 
   const applyHydrationFlagsLocal = useCallback((totalMl: number) => {
-    setTasks((prev) => ({ ...prev, ...hydrationFlagsFromMl(totalMl) }));
+    setTasks((prev) => ({
+      ...prev,
+      ...mergeHydrationTaskFlags(prev, totalMl),
+    }));
   }, []);
 
   const persistTasks = useCallback(
     async (nextTasks: DailyTasks) => {
-      saveLocalTasks(logDate, nextTasks);
+      saveLocalTasks(userId, logDate, nextTasks);
 
       if (!userId || !isSupabaseConfigured()) return;
 
@@ -266,20 +362,23 @@ export function DailyTrackerProvider({
             hydration_1l: nextTasks.hydration_1l,
             hydration_2l: nextTasks.hydration_2l,
             hydration_3l: nextTasks.hydration_3l,
-            morning_vacuum: nextTasks.morning_vacuum,
-            evening_tech_off: nextTasks.evening_tech_off,
+            training_done: nextTasks.training_done,
           };
           await supabase.from("daily_logs").upsert(legacyPayload, {
             onConflict: "user_id,log_date",
           });
         }
 
-        await buildProgressHistory(userId);
+        try {
+          await buildProgressHistory(userId, bodyGoal.programStartDate, locale);
+        } catch {
+          // offline / timeout — neblokuj zápis vody ani checkboxov
+        }
       } finally {
         setSyncing(false);
       }
     },
-    [userId, logDate, supabase, buildProgressHistory]
+    [userId, logDate, supabase, buildProgressHistory, bodyGoal.programStartDate, locale]
   );
 
   const toggleTask = useCallback(
@@ -310,7 +409,10 @@ export function DailyTrackerProvider({
     async (totalMl: number) => {
       let nextTasks = emptyDailyTasks();
       setTasks((prev) => {
-        nextTasks = { ...prev, ...hydrationFlagsFromMl(totalMl) };
+        nextTasks = {
+          ...prev,
+          ...mergeHydrationTaskFlags(prev, totalMl),
+        };
         return nextTasks;
       });
       await persistTasks(nextTasks);
@@ -337,8 +439,7 @@ export function DailyTrackerProvider({
 
       const keyMap: Record<Exclude<HabitKey, "water">, DailyTaskKey> = {
         fasting: "fasting_window",
-        vacuum: "morning_vacuum",
-        night: "evening_tech_off",
+        training: "training_done",
       };
       await toggleTask(keyMap[habit], value);
     },
@@ -358,6 +459,7 @@ export function DailyTrackerProvider({
       totalTasks: TOTAL_DAILY_TASKS,
       progressHistory,
       weekColumns,
+      dayColumns,
       waterWeekPercent: waterWeekPct,
       loading,
       syncing,
@@ -373,6 +475,7 @@ export function DailyTrackerProvider({
       toggleHabit,
       progressHistory,
       weekColumns,
+      dayColumns,
       waterWeekPct,
       loading,
       syncing,

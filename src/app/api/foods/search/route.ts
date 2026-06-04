@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-
-export const dynamic = "force-dynamic";
+import { requireApiUser } from "@/lib/security/api-auth";
 import {
   mergeFoodResults,
   searchFoods,
@@ -8,8 +7,18 @@ import {
 } from "@/lib/food-database";
 import { searchOpenFoodFacts } from "@/lib/open-food-facts";
 
+export const dynamic = "force-dynamic";
+
+const MAX_QUERY_LENGTH = 100;
+
 export async function GET(request: NextRequest) {
-  const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  // Require authenticated user — prevents unauthenticated abuse of this proxy
+  const auth = await requireApiUser();
+  if ("response" in auth) return auth.response;
+
+  const raw = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  // Cap query length to prevent excessively large requests
+  const q = raw.slice(0, MAX_QUERY_LENGTH);
 
   if (q.length < 2) {
     const local = searchFoods(q, q ? 40 : 25);

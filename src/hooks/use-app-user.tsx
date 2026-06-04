@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { withTimeout } from "@/lib/fetch-timeout";
 
@@ -26,6 +27,7 @@ export function AppUserProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
   const refreshUser = useCallback(async () => {
@@ -64,6 +66,9 @@ export function AppUserProvider({ children }: { children: React.ReactNode }) {
     }
     setUserId(null);
     setEmail(null);
+    // Full page reload namiesto router.push — vyčistí všetky cookies, React state
+    // a PKCE verifier, čím sa predíde konfliktom pri ďalšom prihlásení
+    window.location.replace("/login");
   }, [supabase]);
 
   const value = useMemo(

@@ -1,39 +1,50 @@
 "use client";
 
 import { Gauge } from "lucide-react";
-import { HYDRATION_ACCENT } from "@/lib/hydration";
+import {
+  HYDRATION_GOAL_ML,
+  hydrationAccentForState,
+  hydrationGaugeState,
+  hydrationOverByMl,
+  mlToLiters,
+  type HydrationGaugeState,
+} from "@/lib/hydration";
+import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 interface HydrationGaugeProps {
-  percent: number;
-  liters: string;
-  optimized: boolean;
+  totalMl: number;
   size?: number;
   compact?: boolean;
 }
 
+const STATE_GLOW: Record<HydrationGaugeState, string | undefined> = {
+  under: undefined,
+  met: "drop-shadow-[0_0_24px_rgba(52,211,153,0.45)]",
+  over: "drop-shadow-[0_0_26px_rgba(192,132,252,0.55)]",
+};
+
 export function HydrationGauge({
-  percent,
-  liters,
-  optimized,
+  totalMl,
   size = 160,
   compact = false,
 }: HydrationGaugeProps) {
+  const { t } = useI18n();
+  const state = hydrationGaugeState(totalMl);
+  const percent = Math.min(100, Math.round((totalMl / HYDRATION_GOAL_ML) * 100));
+  const overByMl = hydrationOverByMl(totalMl);
+  const accent = hydrationAccentForState(state);
   const stroke = compact ? 8 : 10;
   const radius = (size - stroke * 2) / 2 - 4;
   const cx = size / 2;
   const cy = size / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (Math.min(100, percent) / 100) * circumference;
-  const accent = optimized ? "#34d399" : HYDRATION_ACCENT;
+  const offset = circumference - (percent / 100) * circumference;
 
   return (
     <div className="relative flex flex-col items-center">
       <div
-        className={cn(
-          "relative",
-          optimized && "drop-shadow-[0_0_24px_rgba(52,211,153,0.45)]"
-        )}
+        className={cn("relative transition-all duration-500", STATE_GLOW[state])}
         style={{ width: size, height: size }}
       >
         <svg width={size} height={size} className="-rotate-90" aria-hidden>
@@ -50,7 +61,7 @@ export function HydrationGauge({
             cy={cy}
             r={radius}
             fill="none"
-            stroke="#252525"
+            stroke={state === "over" ? "#3f3f3f" : "#252525"}
             strokeWidth={stroke}
           />
           <circle
@@ -59,7 +70,7 @@ export function HydrationGauge({
             r={radius}
             fill="none"
             stroke={accent}
-            strokeWidth={stroke}
+            strokeWidth={state === "over" ? stroke + 1 : stroke}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
@@ -87,27 +98,48 @@ export function HydrationGauge({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <Gauge
-            className={cn("mb-1 text-[#38bdf8]", compact ? "h-3 w-3" : "h-4 w-4")}
+            className={cn("mb-1", compact ? "h-3 w-3" : "h-4 w-4")}
             style={{ color: accent }}
             aria-hidden
           />
           <span
             className={cn(
               "font-bold tabular-nums",
-              compact ? "font-mono text-2xl" : "font-mono text-3xl"
+              compact ? "font-mono text-2xl" : "font-mono text-3xl",
+              state === "over" && "scale-105"
             )}
             style={{ color: accent }}
           >
-            {liters}L
+            {mlToLiters(totalMl, 1)}L
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            / 4.0L
+          <span
+            className={cn(
+              "font-mono text-[10px] uppercase tracking-widest",
+              state === "over" ? "text-[#e9d5ff]" : "text-muted-foreground"
+            )}
+          >
+            {state === "over"
+              ? `+${mlToLiters(overByMl, 1)}L · / ${mlToLiters(HYDRATION_GOAL_ML, 1)}L`
+              : `/ ${mlToLiters(HYDRATION_GOAL_ML, 1)}L`}
           </span>
         </div>
       </div>
       {!compact && (
-        <p className="mt-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          Palivomer · {percent}%
+        <p
+          className={cn(
+            "mt-2 font-mono text-xs uppercase tracking-widest",
+            state === "over"
+              ? "text-[#e9d5ff]"
+              : state === "met"
+                ? "text-[#6ee7b7]"
+                : "text-muted-foreground"
+          )}
+        >
+          {state === "over"
+            ? t("hydration.gaugeOver", { percent })
+            : state === "met"
+              ? t("hydration.gaugeMet", { percent })
+              : t("hydration.gaugeUnder", { percent })}
         </p>
       )}
     </div>

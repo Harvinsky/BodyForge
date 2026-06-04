@@ -1,10 +1,10 @@
 "use client";
 
 import { format } from "date-fns";
-import { sk } from "date-fns/locale";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { HydrationLogEntry } from "@/lib/hydration";
+import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 interface HydrationLogListProps {
@@ -20,6 +20,7 @@ export function HydrationLogList({
   disabled = false,
   compact = false,
 }: HydrationLogListProps) {
+  const { t, dateLocale } = useI18n();
   const sorted = [...logs].sort(
     (a, b) =>
       new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime()
@@ -32,7 +33,7 @@ export function HydrationLogList({
   return (
     <div className="space-y-2">
       <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        Dnešné dávky · klikni na odstrániť
+        {t("hydration.logTitle")}
       </p>
       <ul className={cn("space-y-1.5", compact && "max-h-36 overflow-y-auto")}>
         {sorted.map((log) => (
@@ -46,7 +47,9 @@ export function HydrationLogList({
               </span>
               <span className="mx-2 text-muted-foreground">·</span>
               <span className="text-muted-foreground">
-                {format(new Date(log.logged_at), "HH:mm", { locale: sk })}
+                {format(new Date(log.logged_at), "HH:mm", {
+                  locale: dateLocale,
+                })}
               </span>
             </div>
             <Button
@@ -56,7 +59,7 @@ export function HydrationLogList({
               disabled={disabled}
               onClick={() => onRemove(log.id)}
               className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
-              aria-label={`Odstrániť ${log.amount_ml} ml`}
+              aria-label={t("hydration.removeDose", { ml: log.amount_ml })}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>

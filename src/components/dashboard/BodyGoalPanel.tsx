@@ -7,40 +7,68 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBodyGoal } from "@/hooks/use-body-goal";
 import {
+  clampDailyCalorieTarget,
   formatGoalDateLabel,
   getWeightProgressPercent,
+  isBodyGoalConfigured,
   parseDateInput,
   parseWeightInput,
 } from "@/lib/body-goal";
+import { DailyCalorieTargetControl } from "@/components/dashboard/daily-calorie-target-control";
+import { EatingWindowControl } from "@/components/dashboard/EatingWindowControl";
 import { getGoalProgressPercent } from "@/lib/goal";
+import { useI18n } from "@/providers/locale-provider";
+
+function weightField(value: number | null): string {
+  return value != null ? String(value) : "";
+}
 
 export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
   const { settings, saving, updateSettings } = useBodyGoal();
-  const [draft, setDraft] = useState(settings);
+  const { t, locale } = useI18n();
+  const [draft, setDraft] = useState({
+    startWeightKg: weightField(settings.startWeightKg),
+    goalWeightKg: weightField(settings.goalWeightKg),
+    currentWeightKg: weightField(settings.currentWeightKg),
+    programStartDate: settings.programStartDate ?? "",
+    goalDate: settings.goalDate ?? "",
+    dailyCalorieTarget:
+      settings.dailyCalorieTarget != null
+        ? String(settings.dailyCalorieTarget)
+        : "",
+  });
 
   useEffect(() => {
-    setDraft(settings);
+    setDraft({
+      startWeightKg: weightField(settings.startWeightKg),
+      goalWeightKg: weightField(settings.goalWeightKg),
+      currentWeightKg: weightField(settings.currentWeightKg),
+      programStartDate: settings.programStartDate ?? "",
+      goalDate: settings.goalDate ?? "",
+      dailyCalorieTarget:
+        settings.dailyCalorieTarget != null
+          ? String(settings.dailyCalorieTarget)
+          : "",
+    });
   }, [settings]);
 
   const weightProgress = getWeightProgressPercent(settings);
   const timeProgress = getGoalProgressPercent(settings);
+  const configured = isBodyGoalConfigured(settings);
+  const goalDateLabel = formatGoalDateLabel(settings.goalDate, locale);
 
   const save = () => {
     void updateSettings({
-      startWeightKg:
-        parseWeightInput(String(draft.startWeightKg)) ?? settings.startWeightKg,
-      goalWeightKg:
-        parseWeightInput(String(draft.goalWeightKg)) ?? settings.goalWeightKg,
-      currentWeightKg: draft.currentWeightKg
-        ? parseWeightInput(String(draft.currentWeightKg))
+      startWeightKg: parseWeightInput(draft.startWeightKg),
+      goalWeightKg: parseWeightInput(draft.goalWeightKg),
+      currentWeightKg: draft.currentWeightKg.trim()
+        ? parseWeightInput(draft.currentWeightKg)
         : null,
-      goalDate: parseDateInput(draft.goalDate) ?? settings.goalDate,
-      programStartDate:
-        parseDateInput(draft.programStartDate) ?? settings.programStartDate,
-      dailyCalorieTarget: Math.min(
-        6000,
-        Math.max(1200, Number(draft.dailyCalorieTarget) || 2000)
-      ),
+      goalDate: parseDateInput(draft.goalDate),
+      programStartDate: parseDateInput(draft.programStartDate),
+      dailyCalorieTarget: draft.dailyCalorieTarget.trim()
+        ? clampDailyCalorieTarget(Number(draft.dailyCalorieTarget))
+        : null,
     });
   };
 
@@ -48,17 +76,26 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
     return (
       <div className="border border-primary/25 bg-background/40 p-3 text-xs">
         <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
-          Cieľ tela
+          {t("goal.bodyTitle")}
         </p>
-        <p className="mt-1 text-[#e8d5a3]">
-          {settings.startWeightKg} → {settings.goalWeightKg} kg
-          {settings.currentWeightKg != null &&
-            ` · teraz ${settings.currentWeightKg} kg`}
-        </p>
-        <p className="mt-0.5 text-muted-foreground">
-          Do {formatGoalDateLabel(settings.goalDate)} · váha {weightProgress}%
-          · čas {timeProgress}%
-        </p>
+        {configured ? (
+          <>
+            <p className="mt-1 text-[#e8d5a3]">
+              {settings.startWeightKg} → {settings.goalWeightKg} kg
+              {settings.currentWeightKg != null &&
+                ` · ${t("goal.currentNow", { weight: settings.currentWeightKg })}`}
+            </p>
+            <p className="mt-0.5 text-muted-foreground">
+              {t("goal.progressUntil", {
+                date: goalDateLabel,
+                weightPct: weightProgress,
+                timePct: timeProgress,
+              })}
+            </p>
+          </>
+        ) : (
+          <p className="mt-1 text-muted-foreground">{t("goal.notConfigured")}</p>
+        )}
       </div>
     );
   }
@@ -68,68 +105,63 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
       <div className="mb-4 flex items-center gap-2">
         <Scale className="h-4 w-4 text-primary" />
         <h3 className="font-mono text-sm uppercase tracking-widest text-[#e8d5a3]">
-          Môj cieľ · BodyForge
+          {t("goal.title")}
         </h3>
       </div>
+
+      {!configured && (
+        <p className="mb-4 text-xs text-muted-foreground">{t("goal.onboarding")}</p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Počiatočná váha (kg)
+            {t("goal.startWeight")}
           </Label>
           <Input
             type="text"
             inputMode="decimal"
+            placeholder={t("goal.placeholderStart")}
             value={draft.startWeightKg}
             onChange={(e) =>
-              setDraft((d) => ({
-                ...d,
-                startWeightKg: Number(e.target.value) || 0,
-              }))
+              setDraft((d) => ({ ...d, startWeightKg: e.target.value }))
             }
             className="border-primary/30 bg-background/60 font-mono"
           />
         </div>
         <div className="space-y-1.5">
           <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Cieľová váha (kg)
+            {t("goal.goalWeight")}
           </Label>
           <Input
             type="text"
             inputMode="decimal"
+            placeholder={t("goal.placeholderGoal")}
             value={draft.goalWeightKg}
             onChange={(e) =>
-              setDraft((d) => ({
-                ...d,
-                goalWeightKg: Number(e.target.value) || 0,
-              }))
+              setDraft((d) => ({ ...d, goalWeightKg: e.target.value }))
             }
             className="border-primary/30 bg-background/60 font-mono"
           />
         </div>
         <div className="space-y-1.5">
           <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Aktuálna váha (kg)
+            {t("goal.currentWeight")}
           </Label>
           <Input
             type="text"
             inputMode="decimal"
-            placeholder="voliteľné"
-            value={draft.currentWeightKg ?? ""}
+            placeholder={t("common.optional")}
+            value={draft.currentWeightKg}
             onChange={(e) =>
-              setDraft((d) => ({
-                ...d,
-                currentWeightKg: e.target.value
-                  ? Number(e.target.value)
-                  : null,
-              }))
+              setDraft((d) => ({ ...d, currentWeightKg: e.target.value }))
             }
             className="border-primary/30 bg-background/60 font-mono"
           />
         </div>
         <div className="space-y-1.5">
           <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Začiatok programu
+            {t("goal.programStart")}
           </Label>
           <Input
             type="date"
@@ -142,7 +174,7 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
         </div>
         <div className="space-y-1.5">
           <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Dátum cieľa
+            {t("goal.goalDate")}
           </Label>
           <Input
             type="date"
@@ -153,24 +185,14 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
             className="border-primary/30 bg-background/60 font-mono text-sm"
           />
         </div>
-        <div className="space-y-1.5">
-          <Label className="font-mono text-[10px] uppercase tracking-wider">
-            Denný limit kalórií (kcal)
-          </Label>
-          <Input
-            type="number"
-            min={1200}
-            max={6000}
-            value={draft.dailyCalorieTarget}
-            onChange={(e) =>
-              setDraft((d) => ({
-                ...d,
-                dailyCalorieTarget: Number(e.target.value) || 2000,
-              }))
-            }
-            className="border-primary/30 bg-background/60 font-mono"
-          />
-        </div>
+      </div>
+
+      <div className="mt-4">
+        <EatingWindowControl />
+      </div>
+
+      <div className="mt-4">
+        <DailyCalorieTargetControl />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -180,11 +202,18 @@ export function BodyGoalPanel({ compact = false }: { compact?: boolean }) {
           disabled={saving}
           className="font-mono text-xs uppercase tracking-wider"
         >
-          {saving ? "Ukladám…" : "Uložiť cieľ"}
+          {saving ? t("common.saving") : t("goal.saveGoal")}
         </Button>
         <p className="font-mono text-[10px] text-muted-foreground">
-          Váha {weightProgress}% · časový plán {timeProgress}% · deficit podľa
-          limitu {settings.dailyCalorieTarget} kcal
+          {configured ? (
+            t("goal.summaryWeight", {
+              pct: weightProgress,
+              timePct: timeProgress,
+              kcal: settings.dailyCalorieTarget ?? "—",
+            })
+          ) : (
+            t("goal.noGoalSaved")
+          )}
         </p>
       </div>
     </div>

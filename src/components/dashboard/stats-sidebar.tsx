@@ -1,214 +1,452 @@
 "use client";
 
-import { Bell, BellOff, BellRing } from "lucide-react";
-import { CircularGauge } from "@/components/dashboard/circular-gauge";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import { ChevronDown } from "lucide-react";
+import {
+  CircularGauge,
+  type CircularGaugeVariant,
+} from "@/components/dashboard/circular-gauge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { useDailyTracker } from "@/hooks/use-daily-tracker";
 import { useBodyGoal } from "@/hooks/use-body-goal";
 import { useCalories } from "@/hooks/use-calories";
 import { useHydration } from "@/hooks/use-hydration";
-import { useNotifications } from "@/providers/notification-provider";
-import { isHabitDone } from "@/lib/habits";
+import { useActivitySummary } from "@/hooks/use-activity-summary";
+import { getEffectiveWeightKg, getWeightProgressPercent, isBodyGoalConfigured } from "@/lib/body-goal";
 import {
   HYDRATION_GOAL_ML,
+  HYDRATION_MILESTONE_ML,
   HYDRATION_WEEK_GOAL_ML,
+  hydrationGaugeState,
+  hydrationOverByMl,
   hydrationProgressPercent,
   mlToLiters,
 } from "@/lib/hydration";
-import { getPlanPace } from "@/lib/goal";
+import { calculateCompletion, countCompletedTasks } from "@/lib/types";
+import { getDaysUntilGoal, getGoalProgressPercent } from "@/lib/goal";
+import { burnedPercentOfTarget } from "@/lib/activity-burn";
+import { PROTEIN_RATIO } from "@/lib/calories";
+import { formatDayCount } from "@/lib/i18n/plural";
+import { bcp47Tag } from "@/lib/i18n/detect";
+import { useI18n } from "@/providers/locale-provider";
+import { cn } from "@/lib/utils";
 
-const GAUGE_SIZE = 108;
+const GAUGE_MIN = 84;
+const GAUGE_MAX_MOBILE = 108;
+const GAUGE_MAX_DESKTOP = 96;
+// Accounting for: section padding (≤14.4px/side = 28px) + grid gap (≤16px) + cell padding (≤8px/side = 16px)
+const SECTION_PAD_PX = 28;
+const GRID_GAP_PX = 16;
+const CELL_INSET_PX = 16;
+
+function useSidebarGaugeSize(containerRef: RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState(GAUGE_MAX_MOBILE);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+
+    const mqDesktop = window.matchMedia("(min-width: 1024px)");
+
+    const update = (width: number) => {
+      const maxCap = mqDesktop.matches ? GAUGE_MAX_DESKTOP : GAUGE_MAX_MOBILE;
+      // Subtract section padding, then split into 2 columns, then subtract cell padding
+      const availableForGrid = width - SECTION_PAD_PX;
+      const cellWidth = (availableForGrid - GRID_GAP_PX) / 2;
+      const next = Math.floor(cellWidth - CELL_INSET_PX);
+      setSize(Math.min(maxCap, Math.max(GAUGE_MIN, next)));
+    };
+
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? 0;
+      if (w > 0) update(w);
+    });
+
+    ro.observe(el);
+    const onMq = () => update(el.getBoundingClientRect().width);
+    mqDesktop.addEventListener("change", onMq);
+
+    return () => {
+      ro.disconnect();
+      mqDesktop.removeEventListener("change", onMq);
+    };
+  }, [containerRef]);
+
+  return size;
+}
+
+function GaugeCell({ children }: { children: ReactNode }) {
+  return <div className="stats-gauge-cell">{children}</div>;
+}
+
+interface GaugeConfig {
+  key: string;
+  value: number;
+  label: string;
+  variant: CircularGaugeVariant;
+  center: "percent" | "text";
+  centerText?: string;
+  goalMet?: boolean;
+  over?: boolean;
+  sublabel?: string;
+}
 
 export function StatsSidebar() {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const gaugeSize = useSidebarGaugeSize(gridRef);
+  const [mobileExpanded, setMobileExpanded] = useState(true);
+  const { t, locale } = useI18n();
+  const numberLocale = bcp47Tag(locale);
   const { settings } = useBodyGoal();
-  const { progressHistory, tasks, loading: trackerLoading } = useDailyTracker();
-  const { totalMl, weekTotalMl, optimized, loading: hydrationLoading } =
-    useHydration();
+  const { loading: trackerLoading, tasks, totalTasks } =
+    useDailyTracker();
+  const { totalMl, weekTotalMl, loading: hydrationLoading } = useHydration();
+
+  // Mirror daily-tracker's effective completion: overlay actual water volume on top of task flags
+  const { completion, completedCount } = useMemo(() => {
+    const effectiveTasks = {
+      ...tasks,
+      hydration_1l: tasks.hydration_1l || totalMl >= HYDRATION_MILESTONE_ML.hydration_1l,
+      hydration_2l: tasks.hydration_2l || totalMl >= HYDRATION_MILESTONE_ML.hydration_2l,
+      hydration_3l: tasks.hydration_3l || totalMl >= HYDRATION_MILESTONE_ML.hydration_3l,
+    };
+    return {
+      completion: calculateCompletion(effectiveTasks),
+      completedCount: countCompletedTasks(effectiveTasks),
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks, totalMl]);
   const {
     status: calorieStatus,
     isFastingDay,
     loading: calorieLoading,
+    macros,
+    proteinGoalG,
+    proteinMode,
   } = useCalories();
   const {
-    enabled,
-    permission,
-    supported,
-    todayPlan,
-    isNative,
-    enableNotifications,
-    disableNotifications,
-  } = useNotifications();
+    today: activityToday,
+    weekBurned,
+    burnedTodayPercent,
+    loading: activityLoading,
+  } = useActivitySummary();
 
   const showSkeleton =
-    trackerLoading || hydrationLoading || calorieLoading;
+    trackerLoading || hydrationLoading || calorieLoading || activityLoading;
 
-  const protocolAverage =
-    progressHistory.length > 0
-      ? Math.round(
-          progressHistory.reduce((s, d) => s + d.completion, 0) /
-            progressHistory.length
-        )
-      : 0;
-
-  const planPace = getPlanPace(settings, protocolAverage);
+  const periodProgress = getGoalProgressPercent(settings);
+  const weightProgress = getWeightProgressPercent(settings);
+  const daysUntilGoal = getDaysUntilGoal(settings);
 
   const waterTodayPercent = hydrationProgressPercent(totalMl);
-  const vacuumPercent = isHabitDone(tasks, "vacuum") ? 100 : 0;
+  const waterState = hydrationGaugeState(totalMl);
+  const waterOverByMl = hydrationOverByMl(totalMl);
   const weekWaterPercent = Math.min(
     100,
     Math.round((weekTotalMl / HYDRATION_WEEK_GOAL_ML) * 100)
   );
   const weekLiters = mlToLiters(weekTotalMl, 1);
 
-  return (
-    <aside className="flex flex-col gap-4">
-      <Card className="harvin-panel">
-        <CardContent className="p-4 sm:p-5">
-          <div
-            className={`flex flex-col gap-5 transition-opacity ${showSkeleton ? "opacity-60" : "opacity-100"}`}
-          >
-              <CircularGauge
-                value={planPace.pacePercent}
-                label="Tempo plánu"
-                size={120}
-                variant={planPace.status === "ahead" ? "emerald" : "gold"}
-                center="text"
-                centerText={planPace.statusLabel}
-                sublabel={`Plnenie ${planPace.actualPercent}% · ${planPace.sublabel}`}
-              />
+  const programGoalMet = isBodyGoalConfigured(settings) && weightProgress >= 100;
+  const dailyGoalMet = completion >= 100;
+  const daysLabel =
+    daysUntilGoal != null ? formatDayCount(daysUntilGoal, locale, t) : "—";
 
-              <div className="border-t border-primary/20 pt-4">
-                <p className="mb-3 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
-                  Protokoly dnes
-                </p>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-5">
-                  <CircularGauge
-                    value={waterTodayPercent}
-                    label="Voda"
-                    size={GAUGE_SIZE}
-                    variant={optimized ? "emerald" : "cyan"}
-                    sublabel={`${mlToLiters(totalMl, 1)} / ${mlToLiters(HYDRATION_GOAL_ML, 1)} L`}
-                  />
-                  <CircularGauge
-                    value={
-                      isFastingDay
-                        ? calorieStatus.fastingValid
-                          ? 0
-                          : Math.min(100, calorieStatus.percentOfTarget)
-                        : Math.min(100, calorieStatus.percentOfTarget)
-                    }
-                    label="Kalórie"
-                    size={GAUGE_SIZE}
-                    variant={
-                      isFastingDay
-                        ? calorieStatus.fastingValid
-                          ? "emerald"
-                          : "gold"
-                        : calorieStatus.inDeficit
-                          ? "emerald"
-                          : "gold"
-                    }
-                    center="text"
-                    centerText={
-                      isFastingDay
-                        ? calorieStatus.fastingValid
-                          ? "Fasting"
-                          : "!"
-                        : calorieStatus.inDeficit
-                          ? "Deficit"
-                          : "Prek."
-                    }
-                    sublabel={`${calorieStatus.consumed}/${calorieStatus.target}`}
-                  />
-                  <CircularGauge
-                    value={vacuumPercent}
-                    label="Vákuum"
-                    size={GAUGE_SIZE}
-                    variant="gold"
-                    sublabel={vacuumPercent ? "Splnené" : "Čaká"}
-                  />
-                  <CircularGauge
-                    value={weekWaterPercent}
-                    label="Voda týždeň"
-                    size={GAUGE_SIZE}
-                    variant="cyan"
-                    center="text"
-                    centerText={`${weekLiters} L`}
-                    sublabel="posledných 7 dní"
-                  />
-                </div>
+  // Unified gauge config — used in both mobile strip and desktop card
+  const planGauges: GaugeConfig[] = [
+    {
+      key: "period",
+      value: periodProgress,
+      label: t("stats.overallPlan"),
+      variant: "violet",
+      center: "percent",
+      goalMet: programGoalMet,
+      sublabel: isBodyGoalConfigured(settings)
+        ? t("stats.weightDays", { pct: weightProgress, days: daysLabel })
+        : t("stats.setGoal"),
+    },
+    {
+      key: "today",
+      value: completion,
+      label: t("stats.todayDone"),
+      variant:
+        completion >= 80 ? "emerald" : completion >= 40 ? "gold" : "rose",
+      center: "percent",
+      goalMet: dailyGoalMet,
+      sublabel: t("stats.tasks", { done: completedCount, total: totalTasks }),
+    },
+  ];
+
+  // Weekly burn goal: daily calorie target × 7 × 25 % (reasonable activity target)
+  const weeklyBurnGoal = Math.max(1750, Math.round((settings.dailyCalorieTarget ?? 2000) * 7 * 0.25));
+  const weekBurnedPercent = burnedPercentOfTarget(weekBurned, weeklyBurnGoal);
+
+  const protocolGauges: GaugeConfig[] = [
+    // ── Row 1: today water · today calories ──
+    {
+      key: "water",
+      value: waterTodayPercent,
+      label: t("stats.water"),
+      variant:
+        waterState === "over"
+          ? "fuchsia"
+          : waterState === "met"
+            ? "emerald"
+            : "cyan",
+      center: "text",
+      centerText:
+        waterState === "over"
+          ? t("gauge.over")
+          : waterState === "met"
+            ? t("gauge.met")
+            : `${waterTodayPercent}%`,
+      over: waterState === "over",
+      sublabel:
+        waterState === "over"
+          ? `+${mlToLiters(waterOverByMl, 1)} L · ${mlToLiters(totalMl, 1)}/${mlToLiters(HYDRATION_GOAL_ML, 1)} L`
+          : `${mlToLiters(totalMl, 1)} / ${mlToLiters(HYDRATION_GOAL_ML, 1)} L`,
+    },
+    {
+      key: "calories",
+      value: isFastingDay
+        ? calorieStatus.fastingValid
+          ? 0
+          : Math.min(100, calorieStatus.percentOfTarget)
+        : Math.min(100, calorieStatus.percentOfTarget),
+      label: t("stats.calories"),
+      variant: isFastingDay
+        ? calorieStatus.fastingValid
+          ? "emerald"
+          : "gold"
+        : calorieStatus.inDeficit
+          ? "emerald"
+          : "rose",
+      center: "text",
+      centerText: isFastingDay
+        ? calorieStatus.fastingValid
+          ? t("common.fasting")
+          : "!"
+        : calorieStatus.inDeficit
+          ? t("common.deficit")
+          : t("gauge.over"),
+      over: !isFastingDay && calorieStatus.overTarget,
+      sublabel: isFastingDay
+        ? `${calorieStatus.consumed}/${calorieStatus.target}`
+        : calorieStatus.inDeficit
+          ? `${calorieStatus.deficit} kcal · ${calorieStatus.consumed}/${calorieStatus.target}`
+          : `+${calorieStatus.overBy} kcal · ${calorieStatus.consumed}/${calorieStatus.target}`,
+    },
+    // ── Row 2: burned today · protein ──
+    {
+      key: "burned",
+      value: burnedTodayPercent,
+      label: t("stats.burnedToday"),
+      variant: "rose",
+      center: "text",
+      centerText: `${activityToday.totalBurned}`,
+      sublabel: t("stats.stepsSport", {
+        steps: activityToday.steps.toLocaleString(numberLocale),
+        min: activityToday.trainingMinutes,
+      }),
+    },
+    {
+      key: "protein",
+      value: Math.min(100, Math.round((macros.protein / proteinGoalG) * 100)),
+      label: t("stats.protein"),
+      variant: "gold",
+      center: "text",
+      centerText: `${Math.round(macros.protein)}g`,
+      goalMet: macros.protein >= proteinGoalG,
+      over: macros.protein > proteinGoalG * 1.1,
+      sublabel: !getEffectiveWeightKg(settings)
+        ? t("stats.proteinModeNoWeight")
+        : t(
+            proteinMode === "cutting"
+              ? "stats.proteinModeCutting"
+              : proteinMode === "building"
+                ? "stats.proteinModeBuilding"
+                : proteinMode === "maintenance"
+                  ? "stats.proteinModeMaintenance"
+                  : "stats.proteinModeNone",
+            { ratio: PROTEIN_RATIO[proteinMode] }
+          ),
+    },
+    // ── Row 3: water week · burned week (paired together) ──
+    {
+      key: "waterWeek",
+      value: weekWaterPercent,
+      label: t("stats.waterWeek"),
+      variant: weekWaterPercent >= 100 ? "emerald" : "cyan",
+      center: "text",
+      centerText: `${weekLiters} L`,
+      goalMet: weekWaterPercent >= 100,
+      sublabel: `${weekLiters} / ${mlToLiters(HYDRATION_WEEK_GOAL_ML, 0)} L`,
+    },
+    {
+      key: "weekBurned",
+      value: weekBurnedPercent,
+      label: t("stats.burnedWeek"),
+      variant: weekBurnedPercent >= 100 ? "emerald" : "rose",
+      center: "text",
+      centerText: `${weekBurned}`,
+      goalMet: weekBurnedPercent >= 100,
+      sublabel: t("stats.burnedWeekSub", { goal: weeklyBurnGoal }),
+    },
+  ];
+
+  return (
+    <aside className="flex w-full min-w-0 flex-col gap-4">
+      {/* ── MOBILE: collapsible gauge grid (hidden on lg+) ── */}
+      <div className={cn("lg:hidden", showSkeleton && "opacity-60")}>
+        {/* Toggle header — summary + chevron */}
+        <button
+          type="button"
+          onClick={() => setMobileExpanded((v) => !v)}
+          className="harvin-panel flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3"
+        >
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#c4b5fd]/90">
+              {completion}%
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#7dd3fc]/90">
+              {mlToLiters(totalMl, 1)} L
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#e8d5a3]/90">
+              {calorieStatus.consumed} kcal
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#6ee7b7]/90">
+              P {Math.round(macros.protein)}g
+            </span>
+          </div>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300",
+              mobileExpanded && "rotate-180"
+            )}
+          />
+        </button>
+
+        {/* Expandable gauge grid */}
+        {mobileExpanded && (
+          <div className="mt-3 flex flex-col gap-3">
+            <section
+              className="stats-gauges-section stats-gauges-section--plan"
+              aria-label={t("stats.overallPlan")}
+            >
+              <div className="stats-gauges-grid">
+                {planGauges.map((g) => (
+                  <GaugeCell key={g.key}>
+                    <CircularGauge
+                      value={g.value}
+                      label={g.label}
+                      size={90}
+                      variant={g.variant}
+                      center={g.center}
+                      centerText={g.centerText}
+                      goalMet={g.goalMet}
+                      over={g.over}
+                      sublabel={g.sublabel}
+                    />
+                  </GaugeCell>
+                ))}
               </div>
-            </div>
+            </section>
+            <section
+              className="stats-gauges-section stats-gauges-section--protocols"
+              aria-label={t("stats.protocolsToday")}
+            >
+              <div className="stats-gauges-grid">
+                {protocolGauges.map((g) => (
+                  <GaugeCell key={g.key}>
+                    <CircularGauge
+                      value={g.value}
+                      label={g.label}
+                      size={90}
+                      variant={g.variant}
+                      center={g.center}
+                      centerText={g.centerText}
+                      goalMet={g.goalMet}
+                      over={g.over}
+                      sublabel={g.sublabel}
+                    />
+                  </GaugeCell>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+      </div>
+
+      {/* ── DESKTOP: card s dvoma sekciami (hidden below lg) ── */}
+      <Card className="hidden min-w-0 overflow-hidden lg:block harvin-panel">
+        <CardContent className="stats-gauges-panel p-0 sm:p-0">
+          <div
+            ref={gridRef}
+            className={cn(
+              "flex min-w-0 flex-col gap-4 transition-opacity sm:gap-5",
+              showSkeleton ? "opacity-60" : "opacity-100"
+            )}
+          >
+            <section
+              className="stats-gauges-section stats-gauges-section--plan"
+              aria-label={t("stats.overallPlan")}
+            >
+              <div className="stats-gauges-grid">
+                {planGauges.map((g) => (
+                  <GaugeCell key={g.key}>
+                    <CircularGauge
+                      value={g.value}
+                      label={g.label}
+                      size={gaugeSize}
+                      variant={g.variant}
+                      center={g.center}
+                      centerText={g.centerText}
+                      goalMet={g.goalMet}
+                      over={g.over}
+                      sublabel={g.sublabel}
+                    />
+                  </GaugeCell>
+                ))}
+              </div>
+            </section>
+
+            <section
+              className="stats-gauges-section stats-gauges-section--protocols"
+              aria-label={t("stats.protocolsToday")}
+            >
+              <div className="stats-gauges-grid">
+                {protocolGauges.map((g) => (
+                  <GaugeCell key={g.key}>
+                    <CircularGauge
+                      value={g.value}
+                      label={g.label}
+                      size={gaugeSize}
+                      variant={g.variant}
+                      center={g.center}
+                      centerText={g.centerText}
+                      goalMet={g.goalMet}
+                      over={g.over}
+                      sublabel={g.sublabel}
+                    />
+                  </GaugeCell>
+                ))}
+              </div>
+            </section>
+          </div>
           {showSkeleton && (
-            <p className="text-center text-[10px] text-muted-foreground">
-              Sync…
+            <p className="mt-3 text-center text-[10px] text-muted-foreground">
+              {t("common.sync")}
             </p>
           )}
         </CardContent>
       </Card>
-
-      {supported && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                {enabled && permission === "granted" ? (
-                  <BellRing className="h-4 w-4 text-primary" />
-                ) : permission === "denied" ? (
-                  <BellOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Bell className="h-4 w-4 text-muted-foreground" />
-                )}
-                <Label htmlFor="notify" className="text-xs uppercase tracking-wide">
-                  Pripomienky
-                </Label>
-              </div>
-              <Switch
-                id="notify"
-                checked={enabled && permission === "granted"}
-                disabled={permission === "denied"}
-                onCheckedChange={(c) =>
-                  c ? enableNotifications() : disableNotifications()
-                }
-              />
-            </div>
-            {permission !== "granted" && permission !== "denied" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-3 w-full border-primary/40 text-xs"
-                onClick={enableNotifications}
-              >
-                Povoliť notifikácie
-              </Button>
-            )}
-            <div className="mt-3 max-h-32 space-y-1 overflow-y-auto border-t border-primary/15 pt-2">
-              <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
-                Dnešný plán
-              </p>
-              {todayPlan.slice(0, 8).map((item) => (
-                <p key={item.id} className="text-[10px] leading-snug text-muted-foreground">
-                  <span className="font-mono text-primary">{item.time}</span>{" "}
-                  {item.title.replace(/^BodyForge · /, "")}
-                </p>
-              ))}
-              {todayPlan.length > 8 && (
-                <p className="text-[10px] text-muted-foreground">
-                  +{todayPlan.length - 8} ďalších…
-                </p>
-              )}
-            </div>
-            <p className="mt-2 text-[10px] text-muted-foreground">
-              {isNative
-                ? "Natívna appka — systémové notifikácie aj na pozadí."
-                : "Web — stránka musí bežať. V appke z telefónu ide to lepšie."}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </aside>
   );
 }

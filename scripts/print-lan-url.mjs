@@ -16,12 +16,19 @@ function lanAddresses() {
 }
 
 const ips = lanAddresses();
-console.log("\n  BodyForge — na mobile otvor (NIE 0.0.0.0 ani localhost):");
+
+console.log("\n  BodyForge — adresy (server musí bežať):\n");
+console.log(`  PC (tento počítač):     http://localhost:${port}`);
+console.log(`  PC (alternatíva):      http://127.0.0.1:${port}`);
+console.log("");
 if (ips.length === 0) {
-  console.log(`  http://<tvoja-IP>:${port}  (ipconfig)\n`);
+  console.log(`  Mobile (Wi‑Fi):        http://<tvoja-IP>:${port}  (ipconfig)`);
 } else {
+  console.log("  Mobile (rovnaká Wi‑Fi):");
   for (const { ip, iface } of ips) {
-    console.log(`  http://${ip}:${port}  (${iface})`);
+    console.log(`                         http://${ip}:${port}  (${iface})`);
   }
-  console.log("");
 }
+console.log("");
+console.log("  Na mobile NEOTVÁRAJ http://0.0.0.0 — len IP vyššie alebo localhost na PC.");
+console.log("  Login: pridaj /login   Dashboard: /\n");

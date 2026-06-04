@@ -1,7 +1,9 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import type { PlannedNotification } from "@/lib/notification-planner";
-import { parseTimeToMinutes } from "@/lib/notifications";
+import { parseTimeToMinutes } from "@/lib/eating-window";
+
+const CHANNEL_ID = "bodyforge-reminders";
 
 export function isNativeApp(): boolean {
   return Capacitor.isNativePlatform();
@@ -16,7 +18,7 @@ function notificationIdFromPlanId(planId: string): number {
   return Math.abs(hash % 1_000_000) + 1;
 }
 
-function scheduleAtToday(time: string): Date {
+function scheduleAtToday(time: string): Date | null {
   const now = new Date();
   const minutes = parseTimeToMinutes(time);
   const h = Math.floor(minutes / 60);
@@ -30,9 +32,22 @@ function scheduleAtToday(time: string): Date {
     0
   );
   if (at.getTime() <= now.getTime()) {
-    at.setDate(at.getDate() + 1);
+    return null;
   }
   return at;
+}
+
+async function ensureNotificationChannel(): Promise<void> {
+  if (!isNativeApp()) return;
+
+  await LocalNotifications.createChannel({
+    id: CHANNEL_ID,
+    name: "BodyForge pripomienky",
+    description: "Jedlo, voda a denný protokol",
+    importance: 4,
+    visibility: 1,
+    vibration: true,
+  });
 }
 
 export async function ensureNativeNotificationPermission(): Promise<boolean> {
@@ -53,6 +68,8 @@ export async function syncNativeNotificationSchedule(
   const ok = await ensureNativeNotificationPermission();
   if (!ok) return;
 
+  await ensureNotificationChannel();
+
   const pending = await LocalNotifications.getPending();
   if (pending.notifications.length > 0) {
     await LocalNotifications.cancel({
@@ -60,12 +77,19 @@ export async function syncNativeNotificationSchedule(
     });
   }
 
-  const notifications = plan.map((item) => ({
-    id: notificationIdFromPlanId(item.id),
-    title: item.title,
-    body: item.body,
-    schedule: { at: scheduleAtToday(item.time) },
-  }));
+  const notifications = plan
+    .map((item) => {
+      const at = scheduleAtToday(item.time);
+      if (!at) return null;
+      return {
+        id: notificationIdFromPlanId(item.id),
+        title: item.title,
+        body: item.body,
+        channelId: CHANNEL_ID,
+        schedule: { at, allowWhileIdle: true },
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   if (notifications.length > 0) {
     await LocalNotifications.schedule({ notifications });

@@ -3,7 +3,7 @@ export const HYDRATION_PROTOCOL_TITLE = "Hydratačný Protokol";
 export const HYDRATION_PROTOCOL_HEADLINE = "Protokol: Hydratácia systému";
 
 export const HYDRATION_PROTOCOL_GOAL =
-  "Cieľ: 3 – 4 litre vody denne pre optimálnu regeneráciu a „suchý“ vizuál.";
+  "Cieľ: 3,5 litra vody denne pre optimálnu regeneráciu a „suchý“ vizuál.";
 
 export const HYDRATION_RULES = [
   {
@@ -16,6 +16,6 @@ export const HYDRATION_RULES = [
   },
   {
     title: "Vizualizácia",
-    body: "Graf v reálnom čase ukazuje tvoj progress voči cieľovým 4 litrom.",
+    body: "Graf v reálnom čase ukazuje tvoj progress voči cieľovým 3,5 litrom.",
   },
 ] as const;

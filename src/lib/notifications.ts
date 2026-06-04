@@ -1,32 +1,26 @@
-import { APP_NAME } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";import {
+  DEFAULT_EATING_WINDOW,
+  formatEatingWindowLabel,
+  parseTimeToMinutes,
+} from "@/lib/eating-window";
 
-export interface ScheduledNotification {
-  id: string;
-  time: string;
-  title: string;
-  body: string;
-}
+export { parseTimeToMinutes } from "@/lib/eating-window";
 
 /** Záložný plán, ak ešte nie je načítaný kontext (hydratácia / kalendár). */
-export const NOTIFICATION_SCHEDULE: ScheduledNotification[] = [
+export const NOTIFICATION_SCHEDULE = [
   {
     id: "window-open-fallback",
     time: "11:30",
-    title: `${APP_NAME} · Jedlo o 12:00`,
-    body: "Za 30 min otváraš jedálne okno (16:8).",
+    title: `${APP_NAME} · Jedlo o ${DEFAULT_EATING_WINDOW.start}`,
+    body: `Za 30 min otváraš jedálne okno (${formatEatingWindowLabel(DEFAULT_EATING_WINDOW)}).`,
   },
   {
     id: "window-close-fallback",
-    time: "19:00",
+    time: DEFAULT_EATING_WINDOW.end,
     title: `${APP_NAME} · Koniec jedenia`,
     body: "Koniec jedenia — začína fasting okno.",
   },
 ];
-
-export function parseTimeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-}
 
 export function getCurrentMinutes(): number {
   const now = new Date();
@@ -51,8 +45,15 @@ export function shouldFireNotification(
   return current >= target && current < target + windowMinutes;
 }
 
+/** Prehliadačové notifikácie fungujú len na localhost / HTTPS. */
+export function canUseBrowserNotifications(): boolean {
+  if (typeof window === "undefined") return false;
+  if (!("Notification" in window)) return false;
+  return window.isSecureContext === true;
+}
+
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
-  if (typeof window === "undefined" || !("Notification" in window)) {
+  if (!canUseBrowserNotifications()) {
     return "denied";
   }
 

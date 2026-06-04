@@ -1,95 +1,72 @@
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { mergeCookieOptions } from "@/lib/security/cookies";
-import { safeRedirectPath } from "@/lib/security/redirect";
 
-/** OAuth codes with "/" must be read from the raw query string. */
-function extractAuthCode(request: NextRequest): string | null {
-  const fromParams = request.nextUrl.searchParams.get("code");
-  if (fromParams && fromParams.length > 20) {
-    return fromParams;
-  }
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const { searchParams } = requestUrl;
+  // In Next.js dev mode request.url may be normalised to localhost even when
+  // the browser connected via a LAN IP.  Use the Host header so the final
+  // redirect goes back to the same origin the client used.
+  const hostHeader = request.headers.get("host") ?? requestUrl.host;
+  const origin = `${requestUrl.protocol}//${hostHeader}`;
 
-  const search = request.nextUrl.search;
-  const match = search.match(/(?:^|[?&])code=([^&]+)/);
-  if (match?.[1]) {
-    return decodeURIComponent(match[1]);
-  }
-
-  return fromParams;
-}
-
-export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  // Chyba priamo z Google / Supabase OAuth
   const oauthError = searchParams.get("error");
-  const errorDescription = searchParams.get("error_description");
-
-  const next = safeRedirectPath(searchParams.get("next"));
-
   if (oauthError) {
-    const message = encodeURIComponent(
-      errorDescription ?? oauthError
-    );
-    return NextResponse.redirect(
-      `${origin}/login?error=auth&message=${message}`
-    );
+    const desc = searchParams.get("error_description") ?? oauthError;
+    const url = new URL("/login", origin);
+    url.searchParams.set("error", "auth");
+    url.searchParams.set("message", desc);
+    return NextResponse.redirect(url);
   }
 
-  const code = extractAuthCode(request);
-
+  const code = searchParams.get("code");
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=auth&message=no_code`);
+    return NextResponse.redirect(new URL("/login?error=auth&message=no_code", origin));
   }
 
-  // Google auth codes start with "4/" — must NOT land on the app directly
+  // Detekcia Google OAuth kódu priamo (nie cez Supabase) — patrí do /api/auth/google/callback
   if (code.startsWith("4/")) {
-    return NextResponse.redirect(
-      `${origin}/login?error=auth&message=${encodeURIComponent(
-        "Chybný OAuth tok: v Google Cloud → Redirect URIs musí byť len Supabase callback (…/auth/v1/callback), nie URL tejto appky."
-      )}`
-    );
+    const url = new URL("/login", origin);
+    url.searchParams.set("error", "auth");
+    url.searchParams.set("message", "google_config_error");
+    return NextResponse.redirect(url);
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const cookieStore = await cookies();
 
-  if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.redirect(
-      `${origin}/login?error=auth&message=missing_env`
-    );
-  }
-
-  let response = NextResponse.redirect(`${origin}${next}`);
-
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key",
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, mergeCookieOptions(options))
+            );
+          } catch {
+            // Read-only context — ignoruj
+          }
+        },
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        );
-        response = NextResponse.redirect(`${origin}${next}`);
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, mergeCookieOptions(options))
-        );
-      },
-    },
-  });
+    }
+  );
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    let hint = error.message;
-    if (error.message.includes("Unable to exchange external code")) {
-      hint +=
-        " → V Supabase → Google skontroluj Client ID + ENABLED Client Secret (…rfwn). V Google Redirect URIs LEN Supabase callback, nie localhost.";
-    }
-    return NextResponse.redirect(
-      `${origin}/login?error=auth&message=${encodeURIComponent(hint)}`
-    );
+    const url = new URL("/login", origin);
+    url.searchParams.set("error", "auth");
+    url.searchParams.set("message", error.message);
+    return NextResponse.redirect(url);
   }
 
-  return response;
+  // Úspešné prihlásenie → dashboard
+  return NextResponse.redirect(new URL("/", origin));
 }

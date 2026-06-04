@@ -1,15 +1,21 @@
 import { format } from "date-fns";
 import type { DailyTasks } from "@/lib/types";
 
-export const HYDRATION_GOAL_ML = 4000;
-/** Cieľ na 7 dní pri 4 L/deň — pre týždenný gauge */
+/** Denný cieľ hydratácie — 100 % gauge pri dosiahnutí */
+export const HYDRATION_GOAL_ML = 3500;
+/** Cieľ na 7 dní — pre týždenný gauge */
 export const HYDRATION_WEEK_GOAL_ML = HYDRATION_GOAL_ML * 7;
 export const HYDRATION_DEADLINE_HOUR = 18;
 export const HYDRATION_DEADLINE_RATIO = 0.8;
 export const HYDRATION_QUICK_AMOUNTS = [300, 500, 1000] as const;
 
 export const HYDRATION_ACCENT = "#38bdf8";
+export const HYDRATION_ACCENT_MET = "#34d399";
+/** Prekročenie denného cieľa — odlíšená, stále „vodná“ farba */
+export const HYDRATION_ACCENT_OVER = "#c084fc";
 export const HYDRATION_ACCENT_DIM = "#0e7490";
+
+export type HydrationGaugeState = "under" | "met" | "over";
 
 export interface HydrationLogEntry {
   id: string;
@@ -25,6 +31,20 @@ export function sumHydrationMl(logs: HydrationLogEntry[]): number {
   return logs.reduce((sum, e) => sum + e.amount_ml, 0);
 }
 
+/** Zlúči cloud + localStorage (remote má prednosť pri rovnakom id). */
+export function mergeHydrationLogs(
+  remote: HydrationLogEntry[],
+  local: HydrationLogEntry[]
+): HydrationLogEntry[] {
+  const byId = new Map<string, HydrationLogEntry>();
+  for (const entry of local) byId.set(entry.id, entry);
+  for (const entry of remote) byId.set(entry.id, entry);
+  return [...byId.values()].sort(
+    (a, b) =>
+      new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
+  );
+}
+
 export function mlToLiters(ml: number, digits = 2): string {
   return (ml / 1000).toFixed(digits);
 }
@@ -35,6 +55,31 @@ export function hydrationProgressPercent(totalMl: number): number {
 
 export function isSystemOptimized(totalMl: number): boolean {
   return totalMl >= HYDRATION_GOAL_ML;
+}
+
+export function isHydrationOverGoal(totalMl: number): boolean {
+  return totalMl > HYDRATION_GOAL_ML;
+}
+
+export function hydrationOverByMl(totalMl: number): number {
+  return Math.max(0, totalMl - HYDRATION_GOAL_ML);
+}
+
+export function hydrationGaugeState(totalMl: number): HydrationGaugeState {
+  if (totalMl > HYDRATION_GOAL_ML) return "over";
+  if (totalMl >= HYDRATION_GOAL_ML) return "met";
+  return "under";
+}
+
+export function hydrationAccentForState(state: HydrationGaugeState): string {
+  switch (state) {
+    case "met":
+      return HYDRATION_ACCENT_MET;
+    case "over":
+      return HYDRATION_ACCENT_OVER;
+    default:
+      return HYDRATION_ACCENT;
+  }
 }
 
 export function remainingMl(totalMl: number): number {
@@ -48,8 +93,40 @@ export function hydrationFlagsFromMl(totalMl: number): Pick<
   return {
     hydration_1l: totalMl >= 1000,
     hydration_2l: totalMl >= 2000,
-    hydration_3l: totalMl >= 3000,
+    hydration_3l: totalMl >= HYDRATION_GOAL_ML,
   };
+}
+
+export type HydrationMilestoneKey =
+  | "hydration_1l"
+  | "hydration_2l"
+  | "hydration_3l";
+
+export const HYDRATION_MILESTONE_ML: Record<HydrationMilestoneKey, number> = {
+  hydration_1l: 1000,
+  hydration_2l: 2000,
+  hydration_3l: HYDRATION_GOAL_ML,
+};
+
+/** Manuálne odkliknuté míľniky neprepísať späť na false pri sync z palivomera. */
+export function mergeHydrationTaskFlags(
+  prev: Pick<DailyTasks, HydrationMilestoneKey>,
+  totalMl: number
+): Pick<DailyTasks, HydrationMilestoneKey> {
+  const auto = hydrationFlagsFromMl(totalMl);
+  return {
+    hydration_1l: prev.hydration_1l || auto.hydration_1l,
+    hydration_2l: prev.hydration_2l || auto.hydration_2l,
+    hydration_3l: prev.hydration_3l || auto.hydration_3l,
+  };
+}
+
+export function isHydrationMilestoneDone(
+  key: HydrationMilestoneKey,
+  tasks: Pick<DailyTasks, HydrationMilestoneKey>,
+  totalMl: number
+): boolean {
+  return tasks[key] || totalMl >= HYDRATION_MILESTONE_ML[key];
 }
 
 export function isBeforeHydrationDeadline(now = new Date()): boolean {
@@ -93,10 +170,22 @@ export function buildHourlyChartData(
 }
 
 export function parseManualMlInput(raw: string): number | null {
-  const trimmed = raw.trim().replace(",", ".");
+  const trimmed = raw.trim().toLowerCase().replace(",", ".");
   if (!trimmed) return null;
 
-  const asNumber = Number(trimmed);
+  const mlMatch = trimmed.match(/^([\d.]+)\s*ml$/);
+  if (mlMatch) {
+    const n = Number(mlMatch[1]);
+    return Number.isNaN(n) || n <= 0 ? null : Math.round(n);
+  }
+
+  const lMatch = trimmed.match(/^([\d.]+)\s*l$/);
+  if (lMatch) {
+    const n = Number(lMatch[1]);
+    return Number.isNaN(n) || n <= 0 ? null : Math.round(n * 1000);
+  }
+
+  const asNumber = Number(trimmed.replace(/[^\d.]/g, "") || trimmed);
   if (Number.isNaN(asNumber) || asNumber <= 0) return null;
 
   if (trimmed.includes(".") || asNumber <= 10) {

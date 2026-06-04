@@ -1,35 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { WeeklyProgress } from "@/components/dashboard/weekly-progress";
 import { CalendarEvents } from "@/components/dashboard/calendar-events";
 import { StatsSidebar } from "@/components/dashboard/stats-sidebar";
-import { StatusStrip } from "@/components/dashboard/status-strip";
+import { DayHistoryPanel } from "@/components/dashboard/DayHistoryPanel";
 import { ProtocolModules } from "@/components/dashboard/ProtocolModules";
 import { BodyGoalPanel } from "@/components/dashboard/BodyGoalPanel";
 import { DailyTracker } from "@/components/dashboard/daily-tracker";
 import { DashboardProviders } from "@/providers/dashboard-providers";
-import { useHydration } from "@/hooks/use-hydration";
 import { useAppUser } from "@/hooks/use-app-user";
+import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
 function DashboardFrame({ children }: { children: React.ReactNode }) {
-  const { optimized } = useHydration();
   return (
-    <div
-      className={cn(
-        "min-h-screen transition-all duration-700",
-        optimized &&
-          "bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(56,189,248,0.12),transparent)]"
-      )}
-    >
-      {optimized && (
-        <div className="sticky top-0 z-50 border-b border-[#34d399]/30 bg-[#0a1628]/90 px-4 py-2 text-center backdrop-blur-sm">
-          <p className="font-mono text-xs font-bold uppercase tracking-[0.4em] text-[#6ee7b7]">
-            System Optimized
-          </p>
-        </div>
-      )}
+    <div className="app-shell min-h-screen w-full overflow-x-clip bg-background">
       {children}
     </div>
   );
@@ -37,12 +24,14 @@ function DashboardFrame({ children }: { children: React.ReactNode }) {
 
 function DashboardContent() {
   const { authReady } = useAppUser();
+  const { t } = useI18n();
+  const [weeklyOpen, setWeeklyOpen] = useState(false);
 
   if (!authReady) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center px-4">
         <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-          Načítavam BodyForge…
+          {t("shell.loading")}
         </p>
       </div>
     );
@@ -51,32 +40,57 @@ function DashboardContent() {
   return (
     <DashboardFrame>
       <DashboardHeader />
-      <main className="mx-auto max-w-[1600px] px-4 py-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[1fr_240px] xl:grid-cols-[1fr_280px]">
-          <div className="order-2 space-y-6 lg:order-1">
-            <DailyTracker />
-            <div className="grid gap-6 xl:grid-cols-2">
-              <WeeklyProgress />
-              <CalendarEvents />
-            </div>
-            <details className="group border border-primary/25 bg-background/30 open:pb-4">
-              <summary className="cursor-pointer list-none px-4 py-3 font-mono text-sm uppercase tracking-widest text-[#e8d5a3] marker:content-none [&::-webkit-details-marker]:hidden">
+      <main className="mx-auto w-full max-w-[1600px] px-4 py-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:py-6 lg:px-8">
+        <div className="grid w-full min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px] lg:gap-6">
+          <div className="order-2 min-w-0 space-y-5 sm:space-y-6 lg:order-1">
+            <details className="group overflow-hidden rounded-xl border border-primary/25 bg-card/40 open:pb-0">
+              <summary className="cursor-pointer list-none px-4 py-3.5 font-mono text-sm uppercase tracking-widest text-[#e8d5a3] marker:content-none [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center justify-between gap-2">
-                  Môj cieľ · váha a kalórie
+                  {t("shell.goalSection")}
                   <span className="text-[10px] text-muted-foreground group-open:hidden">
-                    Rozbaliť
+                    {t("common.expand")}
                   </span>
                   <span className="hidden text-[10px] text-muted-foreground group-open:inline">
-                    Zbaliť
+                    {t("common.collapse")}
                   </span>
                 </span>
               </summary>
               <BodyGoalPanel />
             </details>
+            <DailyTracker />
+            {/* Weekly progress + calendar — collapsible on mobile/tablet, always visible on desktop */}
+            <div className={cn(
+              "overflow-hidden rounded-xl border border-primary/25 bg-card/40 lg:rounded-none lg:border-0 lg:bg-transparent",
+              weeklyOpen ? "pb-4 lg:pb-0" : "lg:pb-0"
+            )}>
+              {/* Toggle header — hidden on desktop */}
+              <button
+                type="button"
+                onClick={() => setWeeklyOpen((v) => !v)}
+                className="flex w-full items-center justify-between gap-2 px-4 py-3.5 font-mono text-sm uppercase tracking-widest text-[#e8d5a3] lg:hidden"
+              >
+                {t("shell.weeklySection")}
+                <span className="text-[10px] text-muted-foreground">
+                  {weeklyOpen ? t("common.collapse") : t("common.expand")}
+                </span>
+              </button>
+              {/* Content — always shown on desktop, toggle-controlled on mobile */}
+              <div className={cn(
+                "lg:block",
+                weeklyOpen ? "block" : "hidden"
+              )}>
+                <div className="px-4 lg:px-0">
+                  <div className="grid min-w-0 gap-5 sm:gap-6 xl:grid-cols-2">
+                    <WeeklyProgress />
+                    <CalendarEvents />
+                  </div>
+                </div>
+              </div>
+            </div>
             <ProtocolModules />
-            <StatusStrip />
+            <DayHistoryPanel />
           </div>
-          <div className="order-1 lg:order-2">
+          <div className="order-1 w-full min-w-0 max-lg:pt-0 lg:order-2 lg:sticky lg:top-[5.5rem] lg:self-start">
             <StatsSidebar />
           </div>
         </div>

@@ -10,8 +10,10 @@ import {
 } from "react";
 import { format } from "date-fns";
 import { useCalendar } from "@/hooks/use-calendar";
+import { useBodyGoal } from "@/hooks/use-body-goal";
 import { useDailyTracker } from "@/hooks/use-daily-tracker";
 import { useHydration } from "@/hooks/use-hydration";
+import { eatingWindowFromSettings } from "@/lib/eating-window";
 import {
   buildNotificationPlan,
   type PlannedNotification,
@@ -23,20 +25,24 @@ import {
   syncNativeNotificationSchedule,
 } from "@/lib/notification-native";
 import {
-  NOTIFICATION_SCHEDULE,
+  canUseBrowserNotifications,
   requestNotificationPermission,
   shouldFireNotification,
   showNotification,
 } from "@/lib/notifications";
+import { useI18n } from "@/providers/locale-provider";
 
-const ENABLED_KEY = "t800-notifications-enabled";
+const ENABLED_KEY = "bodyforge-notifications-enabled";
+const LEGACY_ENABLED_KEY = "t800-notifications-enabled";
 const FIRED_KEY = "t800-notifications-fired-ids";
 
 interface NotificationContextValue {
   enabled: boolean;
   permission: NotificationPermission;
   supported: boolean;
+  canEnable: boolean;
   isNative: boolean;
+  statusMessage: string | null;
   todayPlan: PlannedNotification[];
   enableNotifications: () => Promise<void>;
   disableNotifications: () => void;
@@ -45,6 +51,17 @@ interface NotificationContextValue {
 const NotificationContext = createContext<NotificationContextValue | null>(
   null
 );
+
+function readStoredEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  if (localStorage.getItem(ENABLED_KEY) === "true") return true;
+  return localStorage.getItem(LEGACY_ENABLED_KEY) === "true";
+}
+
+function writeStoredEnabled(value: boolean): void {
+  localStorage.setItem(ENABLED_KEY, value ? "true" : "false");
+  localStorage.setItem(LEGACY_ENABLED_KEY, value ? "true" : "false");
+}
 
 function loadFiredIds(todayKey: string): string[] {
   if (typeof window === "undefined") return [];
@@ -81,11 +98,16 @@ export function NotificationProvider({
   const [permission, setPermission] =
     useState<NotificationPermission>("default");
   const [supported, setSupported] = useState(false);
+  const [canEnable, setCanEnable] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const native = isNativeApp();
 
   const { events } = useCalendar();
   const { totalMl } = useHydration();
   const { tasks } = useDailyTracker();
+  const { settings } = useBodyGoal();
+  const eatingWindow = eatingWindowFromSettings(settings);
+  const { t } = useI18n();
 
   const todayKey = format(new Date(), "yyyy-MM-dd");
 
@@ -98,48 +120,86 @@ export function NotificationProvider({
         isFastingDay: tasks.is_fasting_day,
         mealLeadMinutes: 30,
         waterRemindersPerDay: 3,
+        eatingWindow,
       }),
-    [events, totalMl, tasks.is_fasting_day]
+    [events, totalMl, tasks.is_fasting_day, settings.eatingWindowStart, settings.eatingWindowEnd]
   );
 
-  const schedule: PlannedNotification[] =
-    todayPlan.length > 0
-      ? todayPlan
-      : NOTIFICATION_SCHEDULE.map((item) => ({
-          ...item,
-          kind: "protocol" as const,
-        }));
+  const schedule: PlannedNotification[] = todayPlan;
 
   useEffect(() => {
-    const browserSupported =
-      typeof window !== "undefined" && "Notification" in window;
-    setSupported(native || browserSupported);
+    const browserOk = canUseBrowserNotifications();
+    setSupported(true);
+    setCanEnable(native || browserOk);
 
-    if (localStorage.getItem(ENABLED_KEY) === "true") {
-      setEnabled(true);
-    }
+    const storedEnabled = readStoredEnabled();
 
     if (native) {
       void ensureNativeNotificationPermission().then((ok) => {
         setPermission(ok ? "granted" : "default");
+        if (storedEnabled && ok) {
+          setEnabled(true);
+          setStatusMessage(null);
+        } else if (storedEnabled && !ok) {
+          setEnabled(false);
+          writeStoredEnabled(false);
+          setStatusMessage(t("notifications.nativePermission"));
+        }
       });
       return;
     }
 
-    if (browserSupported) {
+    if (browserOk) {
       setPermission(Notification.permission);
+      if (storedEnabled && Notification.permission === "granted") {
+        setEnabled(true);
+        setStatusMessage(null);
+      } else if (storedEnabled && Notification.permission !== "granted") {
+        setEnabled(false);
+        writeStoredEnabled(false);
+      }
+      return;
     }
-  }, [native]);
+
+    setPermission("denied");
+    if (storedEnabled) {
+      setEnabled(false);
+      writeStoredEnabled(false);
+    }
+    setStatusMessage(t("notifications.browserBlocked"));
+  }, [native, t]);
 
   const enableNotifications = useCallback(async () => {
+    setStatusMessage(null);
+
     if (native) {
       const ok = await ensureNativeNotificationPermission();
       setPermission(ok ? "granted" : "denied");
-      if (ok) {
-        setEnabled(true);
-        localStorage.setItem(ENABLED_KEY, "true");
-        await syncNativeNotificationSchedule(schedule);
+      if (!ok) {
+        setEnabled(false);
+        writeStoredEnabled(false);
+        setStatusMessage(t("notifications.nativeDenied"));
+        return;
       }
+
+      try {
+        setEnabled(true);
+        writeStoredEnabled(true);
+        await syncNativeNotificationSchedule(schedule);
+        setStatusMessage(t("notifications.nativeScheduled"));
+      } catch {
+        setEnabled(false);
+        writeStoredEnabled(false);
+        setStatusMessage(t("notifications.nativeScheduleFailed"));
+      }
+      return;
+    }
+
+    if (!canUseBrowserNotifications()) {
+      setEnabled(false);
+      writeStoredEnabled(false);
+      setPermission("denied");
+      setStatusMessage(t("notifications.browserUnsupported"));
       return;
     }
 
@@ -147,13 +207,24 @@ export function NotificationProvider({
     setPermission(result);
     if (result === "granted") {
       setEnabled(true);
-      localStorage.setItem(ENABLED_KEY, "true");
+      writeStoredEnabled(true);
+      setStatusMessage(t("notifications.browserEnabled"));
+      return;
     }
-  }, [native, schedule]);
+
+    setEnabled(false);
+    writeStoredEnabled(false);
+    setStatusMessage(
+      result === "denied"
+        ? t("notifications.browserDenied")
+        : t("notifications.permissionDenied")
+    );
+  }, [native, schedule, t]);
 
   const disableNotifications = useCallback(() => {
     setEnabled(false);
-    localStorage.setItem(ENABLED_KEY, "false");
+    writeStoredEnabled(false);
+    setStatusMessage(null);
     if (native) {
       void cancelNativeNotifications();
     }
@@ -163,6 +234,7 @@ export function NotificationProvider({
     if (!enabled) return;
 
     if (native) {
+      if (permission !== "granted") return;
       void syncNativeNotificationSchedule(schedule);
       return;
     }
@@ -192,7 +264,9 @@ export function NotificationProvider({
       enabled,
       permission,
       supported,
+      canEnable,
       isNative: native,
+      statusMessage,
       todayPlan: schedule,
       enableNotifications,
       disableNotifications,
@@ -201,7 +275,9 @@ export function NotificationProvider({
       enabled,
       permission,
       supported,
+      canEnable,
       native,
+      statusMessage,
       schedule,
       enableNotifications,
       disableNotifications,

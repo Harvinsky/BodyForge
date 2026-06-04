@@ -30,6 +30,15 @@ function kcalFromNutriments(n: Record<string, number | undefined>): number | nul
   return Math.round(kcal);
 }
 
+function macroFromNutriments(
+  n: Record<string, number | undefined>,
+  key: string
+): number | null {
+  const v = n[`${key}_100g`] ?? n[key] ?? n[`${key}_value`];
+  if (v == null || !Number.isFinite(v) || v < 0) return null;
+  return Math.round(v * 10) / 10;
+}
+
 function normalizeName(name: string, brand?: string): string {
   const base = name.trim();
   if (!brand?.trim()) return base;
@@ -72,6 +81,7 @@ export async function searchOpenFoodFacts(
 
     const name = normalizeName(product.product_name, product.brands);
 
+    const n = product.nutriments ?? {};
     items.push({
       id: `off-${product.code}`,
       name,
@@ -82,6 +92,9 @@ export async function searchOpenFoodFacts(
       keywords: [q.toLowerCase(), product.brands ?? ""].filter(Boolean),
       source: "openfoodfacts",
       brand: product.brands,
+      proteinPer100: macroFromNutriments(n, "proteins"),
+      fatPer100: macroFromNutriments(n, "fat"),
+      carbsPer100: macroFromNutriments(n, "carbohydrates"),
     });
   }
 

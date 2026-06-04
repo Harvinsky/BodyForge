@@ -2,6 +2,96 @@ import type { FoodItem } from "@/lib/food-types";
 
 /** Rozšírená lokálna databáza — bežné potraviny (SK / domáca strava). */
 export const CORE_FOODS: FoodItem[] = [
+  // ── Najčastejšie hľadané ──
+  {
+    id: "dried-tomatoes",
+    name: "Sušené paradajky",
+    kcalPer100: 258,
+    kcalPerPiece: 21,
+    unit: "ks",
+    category: "Zelenina",
+    keywords: [
+      "sušené paradajky", "sušená paradajka", "dried tomato", "dried tomatoes",
+      "sun-dried", "sun dried", "paradajky", "paradajka",
+    ],
+    proteinPerPiece: 1.3,
+    fatPerPiece: 0.4,
+    carbsPerPiece: 3.5,
+    portionHints: [
+      { label: "1 ks (~8g)", qty: 1 },
+      { label: "4 ks", qty: 4 },
+      { label: "10 ks", qty: 10 },
+    ],
+  },
+  {
+    id: "pesto",
+    name: "Pesto (bazalkové)",
+    kcalPer100: 410,
+    kcalPerPiece: null,
+    unit: "g",
+    category: "Omáčky",
+    keywords: [
+      "pesto", "genovese", "pesto genovese", "bazalkové pesto", "basil pesto",
+    ],
+    proteinPer100: 5.0,
+    fatPer100: 40,
+    carbsPer100: 5.0,
+    portionHints: [
+      { label: "1 lyžička (5g)", qty: 5 },
+      { label: "1 lyžica (15g)", qty: 15 },
+      { label: "2 lyžice (30g)", qty: 30 },
+    ],
+  },
+  {
+    id: "dates",
+    name: "Datle",
+    kcalPer100: 282,
+    kcalPerPiece: 23,
+    unit: "ks",
+    category: "Ovocie",
+    keywords: ["datle", "dátľa", "datel", "datľa", "date", "dates", "ďaťla"],
+    proteinPerPiece: 0.2,
+    fatPerPiece: 0,
+    carbsPerPiece: 6.0,
+    portionHints: [
+      { label: "1 ks (~8g)", qty: 1 },
+      { label: "3 ks", qty: 3 },
+      { label: "5 ks", qty: 5 },
+    ],
+  },
+  {
+    id: "rocket",
+    name: "Rukola",
+    kcalPer100: 25,
+    kcalPerPiece: null,
+    unit: "g",
+    category: "Zelenina",
+    keywords: ["rukola", "rocket", "arugula", "šalát"],
+    proteinPer100: 2.6,
+    fatPer100: 0.7,
+    carbsPer100: 2.0,
+    portionHints: [
+      { label: "1 hrsť (30g)", qty: 30 },
+      { label: "porcia (80g)", qty: 80 },
+      { label: "balík (100g)", qty: 100 },
+    ],
+  },
+  {
+    id: "greek-cheese",
+    name: "Feta syr",
+    kcalPer100: 264,
+    kcalPerPiece: null,
+    unit: "g",
+    category: "Mliečne",
+    keywords: ["feta", "grécky syr", "feta cheese"],
+    proteinPer100: 14,
+    fatPer100: 21,
+    carbsPer100: 4.1,
+    portionHints: [
+      { label: "1 kocka (20g)", qty: 20 },
+      { label: "porcia (50g)", qty: 50 },
+    ],
+  },
   // Bielkoviny & vajcia
   {
     id: "egg",
@@ -10,7 +100,16 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: 78,
     unit: "ks",
     category: "Bielkoviny",
-    keywords: ["vajce", "vajíčko", "egg"],
+    keywords: ["vajce", "vajíčko", "egg", "eggs", "whole egg"],
+    proteinPerPiece: 6.3,
+    fatPerPiece: 5.3,
+    carbsPerPiece: 0.6,
+    portionHints: [
+      { label: "1 ks", qty: 1 },
+      { label: "2 ks", qty: 2 },
+      { label: "3 ks", qty: 3 },
+      { label: "4 ks", qty: 4 },
+    ],
   },
   {
     id: "egg-white",
@@ -20,6 +119,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Bielkoviny",
     keywords: ["bielok"],
+    proteinPer100: 10.9,
+    fatPer100: 0.2,
+    carbsPer100: 1.0,
   },
   {
     id: "omelette-3",
@@ -29,6 +131,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["omeleta", "praženica"],
+    proteinPerPiece: 19,
+    fatPerPiece: 16,
+    carbsPerPiece: 2,
   },
   {
     id: "tofu",
@@ -38,6 +143,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Bielkoviny",
     keywords: ["tofu", "sója"],
+    proteinPer100: 8.1,
+    fatPer100: 4.2,
+    carbsPer100: 1.9,
   },
   // Mliečne
   {
@@ -48,6 +156,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Mliečne",
     keywords: ["actimel", "probiotic"],
+    proteinPerPiece: 3.1,
+    fatPerPiece: 1.4,
+    carbsPerPiece: 11,
   },
   {
     id: "milk-15",
@@ -57,6 +168,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Mliečne",
     keywords: ["mlieko", "milk"],
+    proteinPer100: 3.4,
+    fatPer100: 1.5,
+    carbsPer100: 4.8,
   },
   {
     id: "milk-full",
@@ -66,6 +180,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Mliečne",
     keywords: ["mlieko"],
+    proteinPer100: 3.3,
+    fatPer100: 3.6,
+    carbsPer100: 4.8,
   },
   {
     id: "yogurt-greek",
@@ -74,7 +191,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Mliečne",
-    keywords: ["jogurt", "grécky"],
+    keywords: ["jogurt", "grécky", "greek yogurt"],
+    proteinPer100: 9.0,
+    fatPer100: 5.0,
+    carbsPer100: 4.0,
+    portionHints: [
+      { label: "malý pohár (150g)", qty: 150 },
+      { label: "veľký pohár (200g)", qty: 200 },
+    ],
   },
   {
     id: "yogurt-natural",
@@ -84,6 +208,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mliečne",
     keywords: ["jogurt"],
+    proteinPer100: 3.5,
+    fatPer100: 3.3,
+    carbsPer100: 4.7,
   },
   {
     id: "cottage-cheese",
@@ -93,6 +220,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mliečne",
     keywords: ["tvaroh"],
+    proteinPer100: 12.5,
+    fatPer100: 4.3,
+    carbsPer100: 3.6,
   },
   {
     id: "cheese-eidam",
@@ -102,6 +232,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mliečne",
     keywords: ["syr", "eidam", "cheddar"],
+    proteinPer100: 28,
+    fatPer100: 26,
+    carbsPer100: 0.5,
   },
   {
     id: "cheese-mozzarella",
@@ -111,6 +244,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mliečne",
     keywords: ["mozzarella", "syr"],
+    proteinPer100: 22,
+    fatPer100: 22,
+    carbsPer100: 2.2,
   },
   {
     id: "butter",
@@ -120,6 +256,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mliečne",
     keywords: ["maslo", "butter"],
+    proteinPer100: 0.9,
+    fatPer100: 81,
+    carbsPer100: 0.6,
   },
   // Mäso
   {
@@ -130,6 +269,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["kuracie", "prsia", "chicken"],
+    proteinPer100: 31,
+    fatPer100: 3.6,
+    carbsPer100: 0,
   },
   {
     id: "chicken-thigh",
@@ -139,6 +281,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["kuracie", "stehno"],
+    proteinPer100: 24,
+    fatPer100: 13,
+    carbsPer100: 0,
   },
   {
     id: "turkey",
@@ -148,6 +293,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["morčacie", "morka"],
+    proteinPer100: 29,
+    fatPer100: 1.0,
+    carbsPer100: 0,
   },
   {
     id: "beef-lean",
@@ -157,6 +305,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["hovädzie", "beef"],
+    proteinPer100: 26,
+    fatPer100: 15,
+    carbsPer100: 0,
   },
   {
     id: "pork-loin",
@@ -166,6 +317,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["bravčové", "pork"],
+    proteinPer100: 22,
+    fatPer100: 15,
+    carbsPer100: 0,
   },
   {
     id: "ham",
@@ -175,6 +329,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["šunka", "ham"],
+    proteinPer100: 21,
+    fatPer100: 5.5,
+    carbsPer100: 1.0,
   },
   {
     id: "salami",
@@ -184,6 +341,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["saláma"],
+    proteinPer100: 14,
+    fatPer100: 29,
+    carbsPer100: 2.0,
   },
   {
     id: "sausage",
@@ -193,6 +353,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Mäso",
     keywords: ["klobása"],
+    proteinPer100: 13,
+    fatPer100: 26,
+    carbsPer100: 1.5,
   },
   // Ryby
   {
@@ -203,6 +366,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ryby",
     keywords: ["treska", "ryba", "fish"],
+    proteinPer100: 18,
+    fatPer100: 0.7,
+    carbsPer100: 0,
   },
   {
     id: "salmon",
@@ -212,6 +378,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ryby",
     keywords: ["losos", "salmon"],
+    proteinPer100: 20,
+    fatPer100: 13,
+    carbsPer100: 0,
   },
   {
     id: "tuna-canned",
@@ -221,6 +390,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ryby",
     keywords: ["tuniak", "tuna"],
+    proteinPer100: 25,
+    fatPer100: 2.0,
+    carbsPer100: 0,
   },
   // Zelenina
   {
@@ -231,6 +403,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["špenát", "zelenina"],
+    proteinPer100: 2.9,
+    fatPer100: 0.4,
+    carbsPer100: 1.4,
   },
   {
     id: "salad-mix",
@@ -240,6 +415,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["šalát", "rukola", "zelenina"],
+    proteinPer100: 1.4,
+    fatPer100: 0.2,
+    carbsPer100: 1.8,
   },
   {
     id: "tomato",
@@ -249,6 +427,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["paradajka", "rajčina"],
+    proteinPer100: 0.9,
+    fatPer100: 0.2,
+    carbsPer100: 3.5,
   },
   {
     id: "cucumber",
@@ -258,6 +439,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["uhorka"],
+    proteinPer100: 0.7,
+    fatPer100: 0.1,
+    carbsPer100: 2.2,
   },
   {
     id: "pepper",
@@ -267,6 +451,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["paprika"],
+    proteinPer100: 1.0,
+    fatPer100: 0.3,
+    carbsPer100: 6.0,
   },
   {
     id: "broccoli",
@@ -276,6 +463,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["brokolica"],
+    proteinPer100: 2.8,
+    fatPer100: 0.4,
+    carbsPer100: 4.7,
   },
   {
     id: "carrot",
@@ -285,6 +475,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["mrkva"],
+    proteinPer100: 0.9,
+    fatPer100: 0.2,
+    carbsPer100: 10,
   },
   {
     id: "zucchini",
@@ -294,6 +487,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["cuketa"],
+    proteinPer100: 1.2,
+    fatPer100: 0.3,
+    carbsPer100: 3.1,
   },
   {
     id: "green-beans",
@@ -303,6 +499,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["fazuľky"],
+    proteinPer100: 1.8,
+    fatPer100: 0.1,
+    carbsPer100: 7.0,
   },
   {
     id: "mushrooms",
@@ -312,6 +511,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["šampiňóny", "huby"],
+    proteinPer100: 3.1,
+    fatPer100: 0.3,
+    carbsPer100: 2.3,
   },
   {
     id: "onion",
@@ -321,6 +523,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["cibuľa"],
+    proteinPer100: 1.1,
+    fatPer100: 0.1,
+    carbsPer100: 9.3,
   },
   {
     id: "potato",
@@ -330,6 +535,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["zemiak", "zemiaky"],
+    proteinPer100: 2.0,
+    fatPer100: 0.1,
+    carbsPer100: 17,
   },
   {
     id: "sweet-potato",
@@ -339,6 +547,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Zelenina",
     keywords: ["batát"],
+    proteinPer100: 1.6,
+    fatPer100: 0.1,
+    carbsPer100: 20,
   },
   // Ovocie
   {
@@ -349,6 +560,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ovocie",
     keywords: ["jablko", "apple"],
+    proteinPer100: 0.3,
+    fatPer100: 0.2,
+    carbsPer100: 14,
   },
   {
     id: "banana",
@@ -358,6 +572,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ovocie",
     keywords: ["banán", "banana"],
+    proteinPer100: 1.1,
+    fatPer100: 0.3,
+    carbsPer100: 23,
   },
   {
     id: "orange",
@@ -367,6 +584,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ovocie",
     keywords: ["pomaranč", "citrus"],
+    proteinPer100: 0.9,
+    fatPer100: 0.1,
+    carbsPer100: 12,
   },
   {
     id: "berries-mix",
@@ -376,6 +596,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ovocie",
     keywords: ["čučoriedky", "maliny", "jahody"],
+    proteinPer100: 0.7,
+    fatPer100: 0.3,
+    carbsPer100: 14,
   },
   {
     id: "grapes",
@@ -385,6 +608,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Ovocie",
     keywords: ["hrozno"],
+    proteinPer100: 0.7,
+    fatPer100: 0.2,
+    carbsPer100: 18,
   },
   // Obilniny & pečivo
   {
@@ -395,6 +621,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Obilniny",
     keywords: ["ryža", "rice"],
+    proteinPer100: 2.7,
+    fatPer100: 0.3,
+    carbsPer100: 28,
   },
   {
     id: "rice-brown",
@@ -404,6 +633,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Obilniny",
     keywords: ["ryža", "hnedá"],
+    proteinPer100: 2.6,
+    fatPer100: 0.9,
+    carbsPer100: 26,
   },
   {
     id: "pasta",
@@ -413,6 +645,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Obilniny",
     keywords: ["cestoviny", "špagety", "pasta"],
+    proteinPer100: 5.0,
+    fatPer100: 1.1,
+    carbsPer100: 25,
   },
   {
     id: "oats",
@@ -421,7 +656,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Obilniny",
-    keywords: ["ovesné", "vločky"],
+    keywords: ["ovesné", "vločky", "oats", "oatmeal"],
+    proteinPer100: 13,
+    fatPer100: 7.0,
+    carbsPer100: 66,
+    portionHints: [
+      { label: "1 porcia (40g)", qty: 40 },
+      { label: "väčšia porcia (70g)", qty: 70 },
+    ],
   },
   {
     id: "bread-white",
@@ -431,6 +673,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Pečivo",
     keywords: ["chlieb", "bread"],
+    proteinPer100: 9.0,
+    fatPer100: 3.2,
+    carbsPer100: 49,
   },
   {
     id: "bread-whole",
@@ -440,6 +685,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Pečivo",
     keywords: ["chlieb", "celozrnný"],
+    proteinPer100: 9.0,
+    fatPer100: 3.4,
+    carbsPer100: 44,
   },
   {
     id: "roll",
@@ -449,6 +697,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Pečivo",
     keywords: ["rožok", "žemľa"],
+    proteinPerPiece: 7.0,
+    fatPerPiece: 3.0,
+    carbsPerPiece: 40,
   },
   {
     id: "tortilla",
@@ -458,6 +709,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Pečivo",
     keywords: ["tortilla", "wrap"],
+    proteinPerPiece: 4.0,
+    fatPerPiece: 3.5,
+    carbsPerPiece: 25,
   },
   // Strukoviny
   {
@@ -468,6 +722,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Strukoviny",
     keywords: ["šošovica"],
+    proteinPer100: 9.0,
+    fatPer100: 0.4,
+    carbsPer100: 20,
   },
   {
     id: "chickpeas",
@@ -477,6 +734,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Strukoviny",
     keywords: ["cícer"],
+    proteinPer100: 8.9,
+    fatPer100: 2.6,
+    carbsPer100: 27,
   },
   {
     id: "beans",
@@ -486,6 +746,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Strukoviny",
     keywords: ["fazuľa"],
+    proteinPer100: 8.7,
+    fatPer100: 0.5,
+    carbsPer100: 23,
   },
   // Tuky & orechy
   {
@@ -495,7 +758,15 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "ml",
     category: "Tuky",
-    keywords: ["olej", "olivový"],
+    keywords: ["olej", "olivový", "olive oil"],
+    proteinPer100: 0,
+    fatPer100: 100,
+    carbsPer100: 0,
+    portionHints: [
+      { label: "1 lyžička (5ml)", qty: 5 },
+      { label: "1 lyžica (15ml)", qty: 15 },
+      { label: "2 lyžice (30ml)", qty: 30 },
+    ],
   },
   {
     id: "sunflower-oil",
@@ -504,7 +775,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "ml",
     category: "Tuky",
-    keywords: ["olej", "slnečnicový"],
+    keywords: ["olej", "slnečnicový", "sunflower oil"],
+    proteinPer100: 0,
+    fatPer100: 100,
+    carbsPer100: 0,
+    portionHints: [
+      { label: "1 lyžička (5ml)", qty: 5 },
+      { label: "1 lyžica (15ml)", qty: 15 },
+    ],
   },
   {
     id: "walnuts",
@@ -513,7 +791,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Orechy",
-    keywords: ["orechy", "vlašské"],
+    keywords: ["orechy", "vlašské", "walnuts"],
+    proteinPer100: 15,
+    fatPer100: 65,
+    carbsPer100: 14,
+    portionHints: [
+      { label: "1 hrsť (30g)", qty: 30 },
+      { label: "2 hrste (60g)", qty: 60 },
+    ],
   },
   {
     id: "almonds",
@@ -522,7 +807,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Orechy",
-    keywords: ["mandle", "mandľ"],
+    keywords: ["mandle", "mandľ", "almonds"],
+    proteinPer100: 21,
+    fatPer100: 50,
+    carbsPer100: 22,
+    portionHints: [
+      { label: "1 hrsť (23g)", qty: 23 },
+      { label: "2 hrste (46g)", qty: 46 },
+    ],
   },
   {
     id: "peanut-butter",
@@ -531,7 +823,15 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Orechy",
-    keywords: ["arašidové", "maslo"],
+    keywords: ["arašidové", "maslo", "peanut butter"],
+    proteinPer100: 25,
+    fatPer100: 50,
+    carbsPer100: 20,
+    portionHints: [
+      { label: "1 lyžička (10g)", qty: 10 },
+      { label: "1 lyžica (20g)", qty: 20 },
+      { label: "2 lyžice (40g)", qty: 40 },
+    ],
   },
   {
     id: "avocado",
@@ -540,7 +840,14 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Tuky",
-    keywords: ["avokádo"],
+    keywords: ["avokádo", "avocado"],
+    proteinPer100: 2.0,
+    fatPer100: 15,
+    carbsPer100: 9.0,
+    portionHints: [
+      { label: "½ ks (80g)", qty: 80 },
+      { label: "1 ks (160g)", qty: 160 },
+    ],
   },
   // Nápoje
   {
@@ -551,6 +858,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Nápoje",
     keywords: ["voda"],
+    proteinPer100: 0,
+    fatPer100: 0,
+    carbsPer100: 0,
   },
   {
     id: "coffee-black",
@@ -560,6 +870,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Nápoje",
     keywords: ["káva", "coffee"],
+    proteinPer100: 0.1,
+    fatPer100: 0,
+    carbsPer100: 0,
   },
   {
     id: "beer-05",
@@ -569,6 +882,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Nápoje",
     keywords: ["pivo", "beer"],
+    proteinPerPiece: 1.7,
+    fatPerPiece: 0,
+    carbsPerPiece: 16,
   },
   {
     id: "wine-red",
@@ -578,6 +894,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Nápoje",
     keywords: ["víno", "wine"],
+    proteinPer100: 0.1,
+    fatPer100: 0,
+    carbsPer100: 2.6,
   },
   {
     id: "cola",
@@ -587,6 +906,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Nápoje",
     keywords: ["cola", "coca"],
+    proteinPer100: 0,
+    fatPer100: 0,
+    carbsPer100: 11,
   },
   {
     id: "protein-shake",
@@ -596,6 +918,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Nápoje",
     keywords: ["proteín", "shake"],
+    proteinPerPiece: 20,
+    fatPerPiece: 2.5,
+    carbsPerPiece: 5.0,
   },
   // Sladkosti & snacky
   {
@@ -605,7 +930,15 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Sladkosti",
-    keywords: ["čokoláda", "chocolate"],
+    keywords: ["čokoláda", "chocolate", "dark chocolate"],
+    proteinPer100: 5.5,
+    fatPer100: 32,
+    carbsPer100: 60,
+    portionHints: [
+      { label: "2 kúsky (10g)", qty: 10 },
+      { label: "4 kúsky (20g)", qty: 20 },
+      { label: "tabuľka (100g)", qty: 100 },
+    ],
   },
   {
     id: "honey",
@@ -615,6 +948,13 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Sladkosti",
     keywords: ["med", "honey"],
+    proteinPer100: 0.3,
+    fatPer100: 0,
+    carbsPer100: 82,
+    portionHints: [
+      { label: "1 lyžička (7g)", qty: 7 },
+      { label: "1 lyžica (21g)", qty: 21 },
+    ],
   },
   {
     id: "protein-bar",
@@ -624,6 +964,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Sladkosti",
     keywords: ["tyčinka", "protein"],
+    proteinPerPiece: 20,
+    fatPerPiece: 6.0,
+    carbsPerPiece: 20,
   },
   {
     id: "chips",
@@ -632,7 +975,15 @@ export const CORE_FOODS: FoodItem[] = [
     kcalPerPiece: null,
     unit: "g",
     category: "Sladkosti",
-    keywords: ["chipsy", "snack"],
+    keywords: ["chipsy", "snack", "crisps", "chips"],
+    proteinPer100: 6.0,
+    fatPer100: 35,
+    carbsPer100: 53,
+    portionHints: [
+      { label: "malý sáčok (30g)", qty: 30 },
+      { label: "stredný sáčok (75g)", qty: 75 },
+      { label: "veľký sáčok (150g)", qty: 150 },
+    ],
   },
   // Hotové jedlá
   {
@@ -643,6 +994,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["pizza"],
+    proteinPerPiece: 12,
+    fatPerPiece: 10,
+    carbsPerPiece: 35,
   },
   {
     id: "burger",
@@ -652,6 +1006,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["burger", "hamburger"],
+    proteinPerPiece: 28,
+    fatPerPiece: 28,
+    carbsPerPiece: 45,
   },
   {
     id: "soup-clear",
@@ -661,6 +1018,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Jedlá",
     keywords: ["polievka", "vývar"],
+    proteinPer100: 2.5,
+    fatPer100: 1.5,
+    carbsPer100: 2.0,
   },
   {
     id: "pho-bo-700",
@@ -683,6 +1043,9 @@ export const CORE_FOODS: FoodItem[] = [
       "polievka",
       "vietnam",
     ],
+    proteinPerPiece: 40,
+    fatPerPiece: 8.0,
+    carbsPerPiece: 90,
   },
   {
     id: "pho-bowl",
@@ -692,6 +1055,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["pho", "polievka", "vietnam", "rezance"],
+    proteinPerPiece: 28,
+    fatPerPiece: 6.0,
+    carbsPerPiece: 65,
   },
   {
     id: "pho-instant",
@@ -701,6 +1067,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["pho", "instant", "sachet", "ramen"],
+    proteinPerPiece: 10,
+    fatPerPiece: 8.0,
+    carbsPerPiece: 60,
   },
   {
     id: "pho-broth",
@@ -710,6 +1079,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ml",
     category: "Jedlá",
     keywords: ["pho", "vyvar", "bouillon", "polievka"],
+    proteinPer100: 3.5,
+    fatPer100: 1.5,
+    carbsPer100: 3.0,
   },
   {
     id: "rice-noodles-pho",
@@ -719,6 +1091,9 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "g",
     category: "Jedlá",
     keywords: ["pho", "rezance", "ryžové", "noodles"],
+    proteinPer100: 2.0,
+    fatPer100: 0.2,
+    carbsPer100: 25,
   },
   {
     id: "rice-chicken-bowl",
@@ -728,5 +1103,8 @@ export const CORE_FOODS: FoodItem[] = [
     unit: "ks",
     category: "Jedlá",
     keywords: ["miska", "obed"],
+    proteinPerPiece: 30,
+    fatPerPiece: 8.0,
+    carbsPerPiece: 55,
   },
 ];

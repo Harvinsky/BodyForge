@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAppUser } from "@/hooks/use-app-user";
 import type { CalendarEvent } from "@/lib/types";
 
-const CALENDAR_FETCH_MS = 6_000;
+const CALENDAR_FETCH_MS = 20_000;
 
 interface UseCalendarResult {
   events: CalendarEvent[];
@@ -61,6 +61,9 @@ export function useCalendar(): UseCalendarResult {
 
       setEvents(data.events ?? []);
       setConfigured(data.configured ?? true);
+      if (data.error && typeof data.error === "string") {
+        setError(data.error);
+      }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         setError("Kalendár — pomalé pripojenie, skús obnoviť");

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { CapacitorBridge } from "@/components/capacitor-bridge";
-import { APP_DESCRIPTION, APP_NAME } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
+import { LocaleProvider } from "@/providers/locale-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,16 +17,23 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: `${APP_NAME} | Dashboard`,
-  description: APP_DESCRIPTION,
+  description: "BodyForge — daily plan for food, water and training.",
+  icons: {
+    icon: "/deer-logo.svg",
+    apple: "/deer-logo.svg",
+  },
   metadataBase: process.env.VERCEL_URL
     ? new URL(`https://${process.env.VERCEL_URL}`)
     : undefined,
+  applicationName: APP_NAME,
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#121212",
 };
 
 export default function RootLayout({
@@ -35,12 +43,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="sk"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full dark`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <CapacitorBridge />
-        {children}
+        <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>
   );

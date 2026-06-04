@@ -1,7 +1,11 @@
 import type { DailyTasks } from "@/lib/types";
+import {
+  DEFAULT_EATING_WINDOW,
+  isEatingWindowClosed as isWindowClosed,
+  type EatingWindow,
+} from "@/lib/eating-window";
 
 export type MealTaskKey = "meal_1_done" | "meal_snack_done" | "meal_2_done";
-
 export const MEAL_TASK_KEYS: MealTaskKey[] = [
   "meal_1_done",
   "meal_snack_done",
@@ -14,12 +18,12 @@ export const MEAL_BLOCK_TO_TASK: Record<string, MealTaskKey> = {
   "meal-2": "meal_2_done",
 };
 
-export const EATING_WINDOW_CLOSE_HOUR = 20;
-
-export function isEatingWindowClosed(now = new Date()): boolean {
-  return now.getHours() >= EATING_WINDOW_CLOSE_HOUR;
+export function isEatingWindowClosed(
+  window: EatingWindow = DEFAULT_EATING_WINDOW,
+  now = new Date()
+): boolean {
+  return isWindowClosed(window, now);
 }
-
 export function allMealsComplete(tasks: DailyTasks): boolean {
   return MEAL_TASK_KEYS.every((key) => tasks[key]);
 }
@@ -50,8 +54,7 @@ export function rowToDailyTasks(
     hydration_1l: Boolean(row.hydration_1l),
     hydration_2l: Boolean(row.hydration_2l),
     hydration_3l: Boolean(row.hydration_3l),
-    morning_vacuum: Boolean(row.morning_vacuum),
-    evening_tech_off: Boolean(row.evening_tech_off),
+    training_done: Boolean(row.training_done),
     meal_1_done: Boolean(row.meal_1_done),
     meal_snack_done: Boolean(row.meal_snack_done),
     meal_2_done: Boolean(row.meal_2_done),

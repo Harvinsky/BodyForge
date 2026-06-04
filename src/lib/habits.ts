@@ -1,12 +1,11 @@
 import type { DailyTasks } from "@/lib/types";
 
-export type HabitKey = "fasting" | "water" | "vacuum" | "night";
+export type HabitKey = "fasting" | "water" | "training";
 
 export const HABIT_ROWS: { key: HabitKey; label: string }[] = [
   { key: "fasting", label: "16:8" },
-  { key: "water", label: "VODA (3L)" },
-  { key: "vacuum", label: "VÁKUUM" },
-  { key: "night", label: "NOC STOP" },
+  { key: "water", label: "VODA (3,5 L)" },
+  { key: "training", label: "TRÉNING" },
 ];
 
 export function isHabitDone(tasks: DailyTasks, habit: HabitKey): boolean {
@@ -15,10 +14,8 @@ export function isHabitDone(tasks: DailyTasks, habit: HabitKey): boolean {
       return tasks.fasting_window;
     case "water":
       return tasks.hydration_3l;
-    case "vacuum":
-      return tasks.morning_vacuum;
-    case "night":
-      return tasks.evening_tech_off;
+    case "training":
+      return tasks.training_done;
   }
 }
 

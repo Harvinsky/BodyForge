@@ -15,26 +15,26 @@ import {
   mlToLiters,
   type HourlyChartPoint,
 } from "@/lib/hydration";
+import { useI18n } from "@/providers/locale-provider";
 
 interface HydrationChartProps {
   chartData: HourlyChartPoint[];
   loading?: boolean;
   height?: number;
-  emptyMessage?: string;
 }
 
 export function HydrationChart({
   chartData,
   loading = false,
   height = 224,
-  emptyMessage = "Žiadne záznamy — pridaj prvú dávku vody",
 }: HydrationChartProps) {
+  const { t } = useI18n();
   const barData = chartData.filter((d) => d.ml > 0);
 
   if (loading) {
     return (
       <p className="font-mono text-sm text-muted-foreground">
-        Načítavam palivomer…
+        {t("hydration.chartLoading")}
       </p>
     );
   }
@@ -42,7 +42,7 @@ export function HydrationChart({
   if (barData.length === 0) {
     return (
       <p className="border border-dashed border-[#38bdf8]/20 py-8 text-center font-mono text-xs text-muted-foreground">
-        {emptyMessage}
+        {t("hydration.chartEmpty")}
       </p>
     );
   }
@@ -91,8 +91,8 @@ export function HydrationChart({
             formatter={(value, name) => {
               const n = typeof value === "number" ? value : 0;
               if (name === "cumulative")
-                return [`${mlToLiters(n)} L`, "Kumulatívne"];
-              return [`${n} ml`, "Dávka"];
+                return [`${mlToLiters(n)} L`, t("hydration.chartCumulative")];
+              return [`${n} ml`, t("hydration.chartDose")];
             }}
           />
           <Bar

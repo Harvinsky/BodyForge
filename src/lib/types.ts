@@ -4,8 +4,7 @@ export type DailyTaskKey =
   | "hydration_1l"
   | "hydration_2l"
   | "hydration_3l"
-  | "morning_vacuum"
-  | "evening_tech_off";
+  | "training_done";
 
 export interface DailyLog {
   id: string;
@@ -16,8 +15,7 @@ export interface DailyLog {
   hydration_1l: boolean;
   hydration_2l: boolean;
   hydration_3l: boolean;
-  morning_vacuum: boolean;
-  evening_tech_off: boolean;
+  training_done: boolean;
   meal_1_done: boolean;
   meal_snack_done: boolean;
   meal_2_done: boolean;
@@ -31,8 +29,7 @@ export interface DailyTasks {
   hydration_1l: boolean;
   hydration_2l: boolean;
   hydration_3l: boolean;
-  morning_vacuum: boolean;
-  evening_tech_off: boolean;
+  training_done: boolean;
   meal_1_done: boolean;
   meal_snack_done: boolean;
   meal_2_done: boolean;
@@ -60,8 +57,7 @@ export const DAILY_TASK_KEYS: DailyTaskKey[] = [
   "hydration_1l",
   "hydration_2l",
   "hydration_3l",
-  "morning_vacuum",
-  "evening_tech_off",
+  "training_done",
 ];
 
 export const TOTAL_DAILY_TASKS = DAILY_TASK_KEYS.length;
@@ -73,8 +69,7 @@ export function emptyDailyTasks(): DailyTasks {
     hydration_1l: false,
     hydration_2l: false,
     hydration_3l: false,
-    morning_vacuum: false,
-    evening_tech_off: false,
+    training_done: false,
     meal_1_done: false,
     meal_snack_done: false,
     meal_2_done: false,
@@ -96,8 +91,7 @@ export function dailyLogToTasks(log: DailyLog): DailyTasks {
     hydration_1l: log.hydration_1l,
     hydration_2l: log.hydration_2l,
     hydration_3l: log.hydration_3l,
-    morning_vacuum: log.morning_vacuum,
-    evening_tech_off: log.evening_tech_off,
+    training_done: log.training_done ?? false,
     meal_1_done: log.meal_1_done ?? false,
     meal_snack_done: log.meal_snack_done ?? false,
     meal_2_done: log.meal_2_done ?? false,

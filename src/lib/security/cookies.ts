@@ -11,13 +11,18 @@ export function secureCookieDefaults(): CookieOptions {
   };
 }
 
+/** In dev, pass Supabase cookie options through unchanged (PKCE must survive). */
 export function mergeCookieOptions(options?: CookieOptions): CookieOptions {
-  const defaults = secureCookieDefaults();
+  if (!isProduction()) {
+    return options ?? { path: "/", sameSite: "lax", secure: false };
+  }
+  if (!options) {
+    return secureCookieDefaults();
+  }
   return {
     ...options,
-    secure: defaults.secure,
-    httpOnly: options?.httpOnly ?? defaults.httpOnly,
-    sameSite: options?.sameSite ?? defaults.sameSite,
-    path: options?.path ?? defaults.path,
+    secure: options.secure ?? true,
+    path: options.path ?? "/",
+    sameSite: options.sameSite ?? "lax",
   };
 }

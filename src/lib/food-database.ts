@@ -64,6 +64,30 @@ export function calculateFoodCalories(
   return 0;
 }
 
+export interface FoodMacros {
+  protein: number | null;
+  fat: number | null;
+  carbs: number | null;
+}
+
+export function calculateFoodMacros(food: FoodItem, quantity: number): FoodMacros {
+  if (quantity <= 0) return { protein: null, fat: null, carbs: null };
+
+  const round1 = (v: number) => Math.round(v * 10) / 10;
+
+  if (food.unit === "ks") {
+    const p = food.proteinPerPiece != null ? round1(food.proteinPerPiece * quantity) : null;
+    const f = food.fatPerPiece != null ? round1(food.fatPerPiece * quantity) : null;
+    const c = food.carbsPerPiece != null ? round1(food.carbsPerPiece * quantity) : null;
+    return { protein: p, fat: f, carbs: c };
+  }
+
+  const p = food.proteinPer100 != null ? round1((food.proteinPer100 * quantity) / 100) : null;
+  const f = food.fatPer100 != null ? round1((food.fatPer100 * quantity) / 100) : null;
+  const c = food.carbsPer100 != null ? round1((food.carbsPer100 * quantity) / 100) : null;
+  return { protein: p, fat: f, carbs: c };
+}
+
 export function formatFoodLogLabel(food: FoodItem, quantity: number): string {
   if (food.unit === "ks") {
     return `${quantity}× ${food.name}`;

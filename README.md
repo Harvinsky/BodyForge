@@ -10,7 +10,7 @@ Osobný fitness a life-optimization dashboard (**BodyForge**) postavený na **Ne
 
 | Modul | Popis |
 |-------|-------|
-| **Daily Tracker** | Checkbox systém: 16:8 okno, hydratácia 3L, ranné vákuum, večerné vypnutie tech |
+| **Daily Tracker** | Checkbox systém: jedálne okno, hydratácia 3,5 L, tréning dnes |
 | **Google Calendar** | Nadchádzajúce eventy, busy bloky, hint na jedlo |
 | **Progress Chart** | 7-dňový graf konzistencie (% splnených úloh) |
 | **Notifikácie** | Web Notification API: 12:00, 18:30, 19:00 |

@@ -4,6 +4,11 @@ function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
+/** HTTPS + HSTS only on Vercel — LAN http://192.168.x.x must stay plain HTTP. */
+function isDeployedHttps(): boolean {
+  return isProduction() && Boolean(process.env.VERCEL);
+}
+
 function supabaseConnectSources(): string {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) {
@@ -28,7 +33,8 @@ function buildContentSecurityPolicy(): string {
     "object-src 'none'",
     `script-src 'self' 'unsafe-inline'${isProduction() ? "" : " 'unsafe-eval'"}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    // Allow Open Food Facts product images (proxied results include external image URLs)
+    "img-src 'self' data: blob: https://images.openfoodfacts.org https://static.openfoodfacts.org",
     "font-src 'self' data:",
     `connect-src ${connectSrc}`,
     "media-src 'self'",
@@ -36,7 +42,7 @@ function buildContentSecurityPolicy(): string {
     "manifest-src 'self'",
   ];
 
-  if (isProduction()) {
+  if (isDeployedHttps()) {
     directives.push("upgrade-insecure-requests");
   }
 
@@ -56,7 +62,7 @@ export function securityHeaders(): Record<string, string> {
     "Content-Security-Policy": buildContentSecurityPolicy(),
   };
 
-  if (isProduction()) {
+  if (isDeployedHttps()) {
     headers["Strict-Transport-Security"] =
       "max-age=63072000; includeSubDomains; preload";
   }

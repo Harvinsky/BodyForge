@@ -1,7 +1,7 @@
 # Prihlásenie cez Google (Supabase Auth)
 
-Aplikácia podporuje **Prihlásiť sa cez Google** na stránke `/login`.  
-Používa Supabase Auth — **nie** tie isté credentials ako Google Calendar API.
+Aplikácia podporuje **Prihlásiť sa cez Google** na stránke `/login`.
+Po prihlásení číta kalendár priamo z Google účtu daného používateľa cez Supabase OAuth session.
 
 ## 1. Google Cloud — OAuth klient pre prihlásenie
 
@@ -54,6 +54,13 @@ npm run dev
 2. Klikni **Prihlásiť sa cez Google**
 3. Vyber účet → mal si skončiť na dashboarde prihlásený
 
+## BodyForge namiesto `supabase.co` v Google okne
+
+Používatelia často vidia doménu `xxx.supabase.co` — to je OAuth redirect cez Supabase.
+
+1. **Zadarmo:** [Google Auth → Branding](https://console.cloud.google.com/auth/branding) — názov **BodyForge**, logo z `public/deer-logo.svg`
+2. **Úplne skryť doménu:** Supabase **Custom Domain** + zmena `NEXT_PUBLIC_SUPABASE_URL` — detail v `docs/GOOGLE_LOGIN_BODYFORGE.md`
+
 ## Riešenie problémov
 
 | Chyba | Riešenie |
@@ -62,11 +69,11 @@ npm run dev
 | Návrat na `/login?error=auth` | Skontroluj Redirect URLs v Supabase a Google Client ID/Secret |
 | Google nie je v Test users | Pri OAuth consent screen pridaj Gmail (External app v Testing mode) |
 
-## Dve Google integrácie naraz
+## Dôležité pre kalendár per-user
 
 | Účel | Kde sa nastavuje |
 |------|------------------|
-| **Prihlásenie do appky** | Supabase → Providers → Google |
-| **Čítanie kalendára** | `.env.local` → `GOOGLE_CLIENT_*` + refresh token |
+| **Prihlásenie + kalendár používateľa** | Supabase → Providers → Google |
+| **Scope na kalendár** | OAuth consent + login flow (`calendar.readonly`) |
 
-Môžu byť v jednom Google Cloud projekte, ale typicky **dva OAuth klienti** (iné redirect URI).
+Nie je potrebný globálny `GOOGLE_REFRESH_TOKEN` v `.env.local`.

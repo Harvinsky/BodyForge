@@ -1,12 +1,12 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Natívna appka načítava nasadený Next.js (Vercel) alebo lokálny dev server.
- * Nastav CAPACITOR_SERVER_URL pred `npm run cap:sync`.
+ * Natívna Android appka (Capacitor).
  *
- * Príklady:
- *   Produkcia: https://tvoja-app.vercel.app
- *   Dev LAN:   http://192.168.1.10:3000
+ * Dev: WebView načíta Next.js z domácej Wi‑Fi (PC: npm run prod:mobile).
+ * Prihlásenie: natívny Google dialóg v APK — bez supabase.co, bez Vercel.
+ *
+ * CAPACITOR_SERVER_URL=http://192.168.1.10:3000 npm run android:sync
  */
 const serverUrl =
   process.env.CAPACITOR_SERVER_URL?.trim() ||
@@ -14,6 +14,8 @@ const serverUrl =
   "http://localhost:3000";
 
 const isHttp = serverUrl.startsWith("http://");
+const googleWebClientId =
+  process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ?? "";
 
 const config: CapacitorConfig = {
   appId: "com.bodyforge.app",
@@ -27,7 +29,6 @@ const config: CapacitorConfig = {
       "https://*.supabase.co",
       "https://accounts.google.com",
       "https://*.google.com",
-      "https://*.vercel.app",
       "http://localhost:*",
       "http://192.168.*.*:*",
       "http://10.*.*.*:*",
@@ -45,7 +46,15 @@ const config: CapacitorConfig = {
       style: "DARK",
       backgroundColor: "#0a1628",
     },
+    GoogleAuth: {
+      scopes: [
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/calendar.readonly",
+      ],
+      serverClientId: googleWebClientId || undefined,
+      forceCodeForRefreshToken: true,
+    },
   },
 };
-
 export default config;
