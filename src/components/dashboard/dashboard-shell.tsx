@@ -24,7 +24,7 @@ function DashboardFrame({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardContent() {
-  const { authReady, userId, signOut } = useAppUser();
+  const { authReady, email, signOut } = useAppUser();
   const { t } = useI18n();
   const [weeklyOpen, setWeeklyOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -110,7 +110,7 @@ function DashboardContent() {
           </div>
         </div>
       </main>
-      {userId && (
+      {authReady && email && (
         <button
           type="button"
           onClick={() => void handleDeleteAccount()}
