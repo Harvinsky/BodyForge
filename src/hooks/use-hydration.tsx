@@ -317,13 +317,16 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
             saveLocalLogs(userId, dateStr, snapshot);
             applyHydrationFlagsLocal(sumHydrationMl(snapshot));
             setLastError("hydration.removeFailed");
+          } else {
+            // Refresh weekly total after successful delete
+            void loadWeekTotal();
           }
         }
       } finally {
         setSavingCount((c) => c - 1);
       }
     },
-    [userId, dateStr, supabase, applyLogsUpdate, applyHydrationFlagsLocal]
+    [userId, dateStr, supabase, applyLogsUpdate, applyHydrationFlagsLocal, loadWeekTotal]
   );
 
   const totalMl = sumHydrationMl(logs);
