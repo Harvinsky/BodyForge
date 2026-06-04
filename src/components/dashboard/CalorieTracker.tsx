@@ -219,6 +219,7 @@ export function CalorieTracker({ embedded = false }: { embedded?: boolean }) {
                 setAddError(null);
                 const ok = await addMealEntries(items, mealKey);
                 if (!ok) setAddError(t("calories.saveMealError"));
+                return ok;
               }}
             />
 
