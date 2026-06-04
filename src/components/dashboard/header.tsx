@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { DeerLogo } from "@/components/dashboard/deer-logo";
 import { NotificationsBellMenu } from "@/components/dashboard/notifications-bell-menu";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
 import { Progress } from "@/components/ui/progress";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { APP_NAME } from "@/lib/brand";
@@ -22,6 +23,7 @@ import { useI18n } from "@/providers/locale-provider";
 export function DashboardHeader() {
   const { email, signOut } = useAppUser();
   const { settings } = useBodyGoal();
+  const { theme, toggle: toggleTheme } = useTheme();
   const { t, locale } = useI18n();
   const configured = isBodyGoalConfigured(settings);
   const timePercent = getGoalProgressPercent(settings);
@@ -64,6 +66,19 @@ export function DashboardHeader() {
                   {email}
                 </span>
                 <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleTheme}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-3.5 w-3.5" />
+                    ) : (
+                      <Moon className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
                   <NotificationsBellMenu />
                   <Button
                     variant="outline"

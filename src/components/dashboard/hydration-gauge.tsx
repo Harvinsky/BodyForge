@@ -9,6 +9,7 @@ import {
   mlToLiters,
   type HydrationGaugeState,
 } from "@/lib/hydration";
+import { useHydration } from "@/hooks/use-hydration";
 import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
 
@@ -30,9 +31,10 @@ export function HydrationGauge({
   compact = false,
 }: HydrationGaugeProps) {
   const { t } = useI18n();
-  const state = hydrationGaugeState(totalMl);
-  const percent = Math.min(100, Math.round((totalMl / HYDRATION_GOAL_ML) * 100));
-  const overByMl = hydrationOverByMl(totalMl);
+  const { goalMl } = useHydration();
+  const state = hydrationGaugeState(totalMl, goalMl);
+  const percent = Math.min(100, Math.round((totalMl / goalMl) * 100));
+  const overByMl = hydrationOverByMl(totalMl, goalMl);
   const accent = hydrationAccentForState(state);
   const stroke = compact ? 8 : 10;
   const radius = (size - stroke * 2) / 2 - 4;
@@ -119,8 +121,8 @@ export function HydrationGauge({
             )}
           >
             {state === "over"
-              ? `+${mlToLiters(overByMl, 1)}L · / ${mlToLiters(HYDRATION_GOAL_ML, 1)}L`
-              : `/ ${mlToLiters(HYDRATION_GOAL_ML, 1)}L`}
+              ? `+${mlToLiters(overByMl, 1)}L · / ${mlToLiters(goalMl, 1)}L`
+              : `/ ${mlToLiters(goalMl, 1)}L`}
           </span>
         </div>
       </div>

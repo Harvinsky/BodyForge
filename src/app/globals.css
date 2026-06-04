@@ -29,6 +29,34 @@
   --chart-3: #5c4d18;
 }
 
+[data-theme="light"] {
+  --background: #f5f0e8;
+  --foreground: #1a1612;
+  --card: #ede8dc;
+  --card-foreground: #1a1612;
+  --popover: #e8e2d6;
+  --popover-foreground: #1a1612;
+  --primary: #c9a227;
+  --primary-foreground: #fff;
+  --secondary: #e2dccf;
+  --secondary-foreground: #3a3020;
+  --muted: #ddd8cc;
+  --muted-foreground: #8a7d6a;
+  --accent: #f0e8d0;
+  --accent-foreground: #7a5c10;
+  --destructive: #c44b4b;
+  --destructive-foreground: #fff;
+  --border: #c9a22766;
+  --input: #e8e2d6;
+  --ring: #c9a227;
+  --gold: #c9a227;
+  --gold-light: #7a5c10;
+  --gold-dim: #c9a227;
+  --chart-1: #c9a227;
+  --chart-2: #a07818;
+  --chart-3: #7a5c10;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

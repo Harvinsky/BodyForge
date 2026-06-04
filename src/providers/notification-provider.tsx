@@ -103,7 +103,7 @@ export function NotificationProvider({
   const native = isNativeApp();
 
   const { events } = useCalendar();
-  const { totalMl } = useHydration();
+  const { totalMl, goalMl } = useHydration();
   const { tasks } = useDailyTracker();
   const { settings } = useBodyGoal();
   const eatingWindow = eatingWindowFromSettings(settings);
@@ -117,12 +117,13 @@ export function NotificationProvider({
         now: new Date(),
         events,
         hydrationMl: totalMl,
+        hydrationGoalMl: goalMl,
         isFastingDay: tasks.is_fasting_day,
         mealLeadMinutes: 30,
         waterRemindersPerDay: 3,
         eatingWindow,
       }),
-    [events, totalMl, tasks.is_fasting_day, settings.eatingWindowStart, settings.eatingWindowEnd]
+    [events, totalMl, goalMl, tasks.is_fasting_day, settings.eatingWindowStart, settings.eatingWindowEnd]
   );
 
   const schedule: PlannedNotification[] = todayPlan;

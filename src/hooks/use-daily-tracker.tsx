@@ -115,6 +115,7 @@ interface DailyTrackerContextValue {
   syncing: boolean;
   userId: string | null;
   logDate: string;
+  setLogDate: (date: string) => void;
 }
 
 const DailyTrackerContext = createContext<DailyTrackerContextValue | null>(
@@ -465,6 +466,7 @@ export function DailyTrackerProvider({
       syncing,
       userId,
       logDate,
+      setLogDate,
     }),
     [
       tasks,
@@ -481,6 +483,7 @@ export function DailyTrackerProvider({
       syncing,
       userId,
       logDate,
+      setLogDate,
     ]
   );
 

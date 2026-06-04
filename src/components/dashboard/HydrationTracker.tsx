@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Droplets } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HydrationChart } from "@/components/dashboard/hydration-chart";
@@ -7,9 +8,9 @@ import { HydrationControls } from "@/components/dashboard/hydration-controls";
 import { HydrationGauge } from "@/components/dashboard/hydration-gauge";
 import { HydrationLogList } from "@/components/dashboard/hydration-log-list";
 import { useHydration } from "@/hooks/use-hydration";
+import { useBodyGoal } from "@/hooks/use-body-goal";
 import { APP_MODULE_PREFIX } from "@/lib/brand";
 import {
-  HYDRATION_GOAL_ML,
   hydrationGaugeState,
   hydrationOverByMl,
   mlToLiters,
@@ -23,6 +24,7 @@ export function HydrationTracker({ embedded = false }: { embedded?: boolean }) {
   const {
     logs,
     totalMl,
+    goalMl,
     chartData,
     optimized,
     loading,
@@ -31,12 +33,25 @@ export function HydrationTracker({ embedded = false }: { embedded?: boolean }) {
     removeWater,
     lastError,
   } = useHydration();
+  const { settings, updateSettings, saving: goalSaving } = useBodyGoal();
   const { t } = useI18n();
 
-  const waterState = hydrationGaugeState(totalMl);
-  const overByMl = hydrationOverByMl(totalMl);
-  const remaining = remainingMl(totalMl);
-  const deadlineHint = needsDeadlinePush(totalMl);
+  const [goalInput, setGoalInput] = useState("");
+  const [goalEditOpen, setGoalEditOpen] = useState(false);
+
+  const waterState = hydrationGaugeState(totalMl, goalMl);
+  const overByMl = hydrationOverByMl(totalMl, goalMl);
+  const remaining = remainingMl(totalMl, goalMl);
+  const deadlineHint = needsDeadlinePush(totalMl, undefined, goalMl);
+
+  const handleGoalSave = async () => {
+    const val = parseFloat(goalInput.replace(",", "."));
+    if (!isNaN(val) && val >= 1 && val <= 10) {
+      await updateSettings({ hydrationTargetLiters: val });
+      setGoalEditOpen(false);
+      setGoalInput("");
+    }
+  };
 
   const rules = [
     { title: t("hydration.ruleMicroTitle"), body: t("hydration.ruleMicroBody") },
@@ -83,9 +98,46 @@ export function HydrationTracker({ embedded = false }: { embedded?: boolean }) {
               <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
                 {APP_MODULE_PREFIX} · {t("hydration.modulePrefix")}
               </p>
-              <CardTitle className="mt-1 font-mono text-base uppercase tracking-widest text-[#e8d5a3]">
-                {t("hydration.title")}
-              </CardTitle>
+              <div className="mt-1 flex items-center gap-2">
+                <CardTitle className="font-mono text-base uppercase tracking-widest text-[#e8d5a3]">
+                  {t("hydration.title")}
+                </CardTitle>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoalEditOpen((v) => !v);
+                    setGoalInput(String((settings.hydrationTargetLiters ?? 3.5).toFixed(1)));
+                  }}
+                  className="font-mono text-[10px] text-[#38bdf8]/70 underline decoration-dotted hover:text-[#38bdf8]"
+                  title={t("hydration.changeGoal")}
+                >
+                  {t("hydration.targetLabel", { liters: mlToLiters(goalMl, 1) })}
+                </button>
+              </div>
+              {goalEditOpen && (
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    step={0.1}
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") void handleGoalSave(); }}
+                    className="w-20 border border-[#38bdf8]/40 bg-background px-2 py-1 font-mono text-xs text-foreground"
+                    placeholder="3.5"
+                  />
+                  <span className="font-mono text-xs text-muted-foreground">L</span>
+                  <button
+                    type="button"
+                    onClick={() => void handleGoalSave()}
+                    disabled={goalSaving}
+                    className="border border-[#38bdf8]/40 bg-[#38bdf8]/10 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-[#38bdf8] hover:bg-[#38bdf8]/20 disabled:opacity-50"
+                  >
+                    {t("common.save")}
+                  </button>
+                </div>
+              )}
               <details className="mt-2">
                 <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-[#38bdf8]">
                   {t("hydration.aboutProtocol")}
@@ -141,7 +193,7 @@ export function HydrationTracker({ embedded = false }: { embedded?: boolean }) {
           <span className="text-[#38bdf8]">
             {t("hydration.total", {
               current: mlToLiters(totalMl),
-              goal: mlToLiters(HYDRATION_GOAL_ML, 1),
+              goal: mlToLiters(goalMl, 1),
             })}
           </span>
           {!optimized && waterState === "under" && (

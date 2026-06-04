@@ -23,7 +23,6 @@ import { HydrationControls } from "@/components/dashboard/hydration-controls";
 import { useHydration } from "@/hooks/use-hydration";
 import { useEatingWindow } from "@/hooks/use-eating-window";
 import {
-  HYDRATION_GOAL_ML,
   HYDRATION_MILESTONE_ML,
   hydrationProgressPercent,
   isHydrationMilestoneDone,
@@ -96,10 +95,10 @@ const HYDRATION_MILESTONES: {
 ];
 
 function HydrationCompactRow() {
-  const { totalMl, addWater, saving, loading, lastError } = useHydration();
+  const { totalMl, goalMl, addWater, saving, loading, lastError } = useHydration();
   const { tasks, toggleTask } = useDailyTracker();
   const { t } = useI18n();
-  const percent = hydrationProgressPercent(totalMl);
+  const percent = hydrationProgressPercent(totalMl, goalMl);
 
   return (
     <div className="rounded-lg border border-border/60 bg-background/40 p-3.5 sm:p-4">
@@ -111,7 +110,7 @@ function HydrationCompactRow() {
           </span>
         </div>
         <span className="font-mono text-sm tabular-nums text-cyan-200">
-          {mlToLiters(totalMl, 1)} / {mlToLiters(HYDRATION_GOAL_ML, 1)} L
+          {mlToLiters(totalMl, 1)} / {mlToLiters(goalMl, 1)} L
         </span>
       </div>
       <Progress value={percent} className="mt-3 h-1.5" />

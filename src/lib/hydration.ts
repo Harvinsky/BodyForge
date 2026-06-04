@@ -49,25 +49,25 @@ export function mlToLiters(ml: number, digits = 2): string {
   return (ml / 1000).toFixed(digits);
 }
 
-export function hydrationProgressPercent(totalMl: number): number {
-  return Math.min(100, Math.round((totalMl / HYDRATION_GOAL_ML) * 100));
+export function hydrationProgressPercent(totalMl: number, goalMl = HYDRATION_GOAL_ML): number {
+  return Math.min(100, Math.round((totalMl / goalMl) * 100));
 }
 
-export function isSystemOptimized(totalMl: number): boolean {
-  return totalMl >= HYDRATION_GOAL_ML;
+export function isSystemOptimized(totalMl: number, goalMl = HYDRATION_GOAL_ML): boolean {
+  return totalMl >= goalMl;
 }
 
-export function isHydrationOverGoal(totalMl: number): boolean {
-  return totalMl > HYDRATION_GOAL_ML;
+export function isHydrationOverGoal(totalMl: number, goalMl = HYDRATION_GOAL_ML): boolean {
+  return totalMl > goalMl;
 }
 
-export function hydrationOverByMl(totalMl: number): number {
-  return Math.max(0, totalMl - HYDRATION_GOAL_ML);
+export function hydrationOverByMl(totalMl: number, goalMl = HYDRATION_GOAL_ML): number {
+  return Math.max(0, totalMl - goalMl);
 }
 
-export function hydrationGaugeState(totalMl: number): HydrationGaugeState {
-  if (totalMl > HYDRATION_GOAL_ML) return "over";
-  if (totalMl >= HYDRATION_GOAL_ML) return "met";
+export function hydrationGaugeState(totalMl: number, goalMl = HYDRATION_GOAL_ML): HydrationGaugeState {
+  if (totalMl > goalMl) return "over";
+  if (totalMl >= goalMl) return "met";
   return "under";
 }
 
@@ -82,18 +82,18 @@ export function hydrationAccentForState(state: HydrationGaugeState): string {
   }
 }
 
-export function remainingMl(totalMl: number): number {
-  return Math.max(0, HYDRATION_GOAL_ML - totalMl);
+export function remainingMl(totalMl: number, goalMl = HYDRATION_GOAL_ML): number {
+  return Math.max(0, goalMl - totalMl);
 }
 
-export function hydrationFlagsFromMl(totalMl: number): Pick<
+export function hydrationFlagsFromMl(totalMl: number, goalMl = HYDRATION_GOAL_ML): Pick<
   DailyTasks,
   "hydration_1l" | "hydration_2l" | "hydration_3l"
 > {
   return {
     hydration_1l: totalMl >= 1000,
     hydration_2l: totalMl >= 2000,
-    hydration_3l: totalMl >= HYDRATION_GOAL_ML,
+    hydration_3l: totalMl >= goalMl,
   };
 }
 
@@ -133,9 +133,9 @@ export function isBeforeHydrationDeadline(now = new Date()): boolean {
   return now.getHours() < HYDRATION_DEADLINE_HOUR;
 }
 
-export function needsDeadlinePush(totalMl: number, now = new Date()): boolean {
+export function needsDeadlinePush(totalMl: number, now = new Date(), goalMl = HYDRATION_GOAL_ML): boolean {
   if (!isBeforeHydrationDeadline(now)) return false;
-  const targetByDeadline = HYDRATION_GOAL_ML * HYDRATION_DEADLINE_RATIO;
+  const targetByDeadline = goalMl * HYDRATION_DEADLINE_RATIO;
   return totalMl < targetByDeadline;
 }
 

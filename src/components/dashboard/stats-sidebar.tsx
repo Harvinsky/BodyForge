@@ -21,9 +21,7 @@ import { useHydration } from "@/hooks/use-hydration";
 import { useActivitySummary } from "@/hooks/use-activity-summary";
 import { getEffectiveWeightKg, getWeightProgressPercent, isBodyGoalConfigured } from "@/lib/body-goal";
 import {
-  HYDRATION_GOAL_ML,
   HYDRATION_MILESTONE_ML,
-  HYDRATION_WEEK_GOAL_ML,
   hydrationGaugeState,
   hydrationOverByMl,
   hydrationProgressPercent,
@@ -107,7 +105,7 @@ export function StatsSidebar() {
   const { settings } = useBodyGoal();
   const { loading: trackerLoading, tasks, totalTasks } =
     useDailyTracker();
-  const { totalMl, weekTotalMl, loading: hydrationLoading } = useHydration();
+  const { totalMl, goalMl, weekTotalMl, loading: hydrationLoading } = useHydration();
 
   // Mirror daily-tracker's effective completion: overlay actual water volume on top of task flags
   const { completion, completedCount } = useMemo(() => {
@@ -145,12 +143,12 @@ export function StatsSidebar() {
   const weightProgress = getWeightProgressPercent(settings);
   const daysUntilGoal = getDaysUntilGoal(settings);
 
-  const waterTodayPercent = hydrationProgressPercent(totalMl);
-  const waterState = hydrationGaugeState(totalMl);
-  const waterOverByMl = hydrationOverByMl(totalMl);
+  const waterTodayPercent = hydrationProgressPercent(totalMl, goalMl);
+  const waterState = hydrationGaugeState(totalMl, goalMl);
+  const waterOverByMl = hydrationOverByMl(totalMl, goalMl);
   const weekWaterPercent = Math.min(
     100,
-    Math.round((weekTotalMl / HYDRATION_WEEK_GOAL_ML) * 100)
+    Math.round((weekTotalMl / (goalMl * 7)) * 100)
   );
   const weekLiters = mlToLiters(weekTotalMl, 1);
 
@@ -210,8 +208,8 @@ export function StatsSidebar() {
       over: waterState === "over",
       sublabel:
         waterState === "over"
-          ? `+${mlToLiters(waterOverByMl, 1)} L · ${mlToLiters(totalMl, 1)}/${mlToLiters(HYDRATION_GOAL_ML, 1)} L`
-          : `${mlToLiters(totalMl, 1)} / ${mlToLiters(HYDRATION_GOAL_ML, 1)} L`,
+          ? `+${mlToLiters(waterOverByMl, 1)} L · ${mlToLiters(totalMl, 1)}/${mlToLiters(goalMl, 1)} L`
+          : `${mlToLiters(totalMl, 1)} / ${mlToLiters(goalMl, 1)} L`,
     },
     {
       key: "calories",
@@ -287,7 +285,7 @@ export function StatsSidebar() {
       center: "text",
       centerText: `${weekLiters} L`,
       goalMet: weekWaterPercent >= 100,
-      sublabel: `${weekLiters} / ${mlToLiters(HYDRATION_WEEK_GOAL_ML, 0)} L`,
+      sublabel: `${weekLiters} / ${mlToLiters(goalMl * 7, 0)} L`,
     },
     {
       key: "weekBurned",

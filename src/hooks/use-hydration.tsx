@@ -21,11 +21,11 @@ import {
   getTodayLogDate,
   mergeHydrationLogs,
   type HydrationLogEntry,
-  isSystemOptimized,
   sumHydrationMl,
 } from "@/lib/hydration";
 import { useAppUser } from "@/hooks/use-app-user";
 import { useDailyTracker } from "@/hooks/use-daily-tracker";
+import { useBodyGoal } from "@/hooks/use-body-goal";
 
 const LOCAL_HYDRATION_PREFIX = "t800-hydration-log-";
 const HYDRATION_FETCH_MS = 6_000;
@@ -69,6 +69,7 @@ function saveLocalLogs(
 interface HydrationContextValue {
   logs: HydrationLogEntry[];
   totalMl: number;
+  goalMl: number;
   weekTotalMl: number;
   chartData: ReturnType<typeof buildHourlyChartData>;
   optimized: boolean;
@@ -85,6 +86,8 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
   const { authReady } = useAppUser();
   const { userId, logDate, syncHydrationLevels, applyHydrationFlagsLocal } =
     useDailyTracker();
+  const { settings: bodyGoalSettings } = useBodyGoal();
+  const goalMl = (bodyGoalSettings.hydrationTargetLiters ?? 3.5) * 1000;
   const [logs, setLogs] = useState<HydrationLogEntry[]>([]);
   const logsRef = useRef<HydrationLogEntry[]>([]);
   // Generácia načítania — každý increment zneplatní predošlé loadLogs volanie
@@ -334,12 +337,13 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
 
   const totalMl = sumHydrationMl(logs);
   const chartData = useMemo(() => buildHourlyChartData(logs), [logs]);
-  const optimized = isSystemOptimized(totalMl);
+  const optimized = totalMl >= goalMl;
 
   const value = useMemo(
     () => ({
       logs,
       totalMl,
+      goalMl,
       weekTotalMl,
       chartData,
       optimized,
@@ -352,6 +356,7 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
     [
       logs,
       totalMl,
+      goalMl,
       weekTotalMl,
       chartData,
       optimized,

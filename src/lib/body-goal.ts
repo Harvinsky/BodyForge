@@ -24,6 +24,8 @@ export interface BodyGoalSettings {
 
   eatingWindowEnd: string | null;
 
+  hydrationTargetLiters: number | null;
+
 }
 
 
@@ -47,6 +49,8 @@ export const EMPTY_BODY_GOAL: BodyGoalSettings = {
   eatingWindowStart: null,
 
   eatingWindowEnd: null,
+
+  hydrationTargetLiters: null,
 
 };
 
@@ -407,6 +411,13 @@ function parseCalorieFromDb(value: unknown): number | null {
 
 
 
+function parseHydrationFromDb(value: unknown): number | null {
+  if (value == null) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0 || n > 20) return null;
+  return Math.round(n * 10) / 10;
+}
+
 export function settingsFromDbRow(row: Record<string, unknown>): BodyGoalSettings {
   return sanitizeLoadedSettings({
     startWeightKg: parseWeightFromDb(row.start_weight_kg),
@@ -417,6 +428,7 @@ export function settingsFromDbRow(row: Record<string, unknown>): BodyGoalSetting
     dailyCalorieTarget: parseCalorieFromDb(row.daily_calorie_target),
     eatingWindowStart: normalizeTimeFromDb(row.eating_window_start),
     eatingWindowEnd: normalizeTimeFromDb(row.eating_window_end),
+    hydrationTargetLiters: parseHydrationFromDb(row.hydration_target_liters),
   });
 }
 

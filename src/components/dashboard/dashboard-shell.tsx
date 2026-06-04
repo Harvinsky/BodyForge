@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { WeeklyProgress } from "@/components/dashboard/weekly-progress";
 import { CalendarEvents } from "@/components/dashboard/calendar-events";
 import { StatsSidebar } from "@/components/dashboard/stats-sidebar";
 import { DayHistoryPanel } from "@/components/dashboard/DayHistoryPanel";
+import { LongTermProgress } from "@/components/dashboard/LongTermProgress";
 import { ProtocolModules } from "@/components/dashboard/ProtocolModules";
 import { BodyGoalPanel } from "@/components/dashboard/BodyGoalPanel";
 import { DailyTracker } from "@/components/dashboard/daily-tracker";
@@ -104,8 +105,17 @@ function DashboardContent() {
             </div>
             <ProtocolModules />
             <DayHistoryPanel />
+            <LongTermProgress />
             {authReady && email && (
-              <div className="flex items-center justify-end pt-2">
+              <div className="flex items-center justify-between pt-2">
+                <a
+                  href="/api/export"
+                  download="bodyforge-export.csv"
+                  className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-primary transition-colors"
+                >
+                  <Download className="h-3 w-3" />
+                  {t("common.exportData")}
+                </a>
                 <button
                   type="button"
                   onClick={() => void handleDeleteAccount()}

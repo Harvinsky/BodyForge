@@ -41,6 +41,8 @@ export interface NotificationPlanInput {
 
   hydrationMl?: number;
 
+  hydrationGoalMl?: number;
+
   isFastingDay?: boolean;
 
   mealLeadMinutes?: number;
@@ -265,7 +267,8 @@ export function buildNotificationPlan(
   const todayEvents = getTodayEvents(input.events ?? [], now);
   const lead = input.mealLeadMinutes ?? 30;
   const hydrationMl = input.hydrationMl ?? 0;
-  const hydrationPct = Math.round((hydrationMl / HYDRATION_GOAL_ML) * 100);
+  const hydrationGoalMl = input.hydrationGoalMl ?? HYDRATION_GOAL_ML;
+  const hydrationPct = Math.round((hydrationMl / hydrationGoalMl) * 100);
   const plan: PlannedNotification[] = [];
 
   if (!input.isFastingDay && window) {
@@ -326,7 +329,7 @@ export function buildNotificationPlan(
 
 
 
-  if (hydrationMl < HYDRATION_GOAL_ML * 0.85) {
+  if (hydrationMl < hydrationGoalMl * 0.85) {
 
     const waterCount = input.waterRemindersPerDay ?? 3;
 
@@ -374,7 +377,7 @@ export function buildNotificationPlan(
         time: window.end,
         kind: "water",
         title: `${APP_NAME} · Posledná voda`,
-        body: `Do ${window.end} doplň aspoň 80 % denného cieľa (${(HYDRATION_GOAL_ML / 1000).toFixed(1).replace(".0", "")} L). Teraz ${hydrationPct} %.`,
+        body: `Do ${window.end} doplň aspoň 80 % denného cieľa (${(hydrationGoalMl / 1000).toFixed(1).replace(".0", "")} L). Teraz ${hydrationPct} %.`,
       });
     }
   }

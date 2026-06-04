@@ -9,7 +9,6 @@ import { useEatingWindow } from "@/hooks/use-eating-window";
 import { formatGoalDateLabel } from "@/lib/body-goal";
 import { isHabitDone, type HabitKey } from "@/lib/habits";
 import { useHydration } from "@/hooks/use-hydration";
-import { HYDRATION_GOAL_ML } from "@/lib/hydration";
 import { formatDayCount } from "@/lib/i18n/plural";
 import { useI18n } from "@/providers/locale-provider";
 import { cn } from "@/lib/utils";
@@ -43,12 +42,12 @@ export function WeeklyProgress() {
     { key: "training", label: t("habits.training") },
   ];
 
-  const { totalMl } = useHydration();
+  const { totalMl, goalMl } = useHydration();
   const dayCount = dayColumns.length;
   // For today's water habit, use actual logged volume so the checkbox reflects
   // real water even before the DB flag syncs back from use-hydration
   const todayHabits = (key: HabitKey) => {
-    if (key === "water") return tasks.hydration_3l || totalMl >= HYDRATION_GOAL_ML;
+    if (key === "water") return tasks.hydration_3l || totalMl >= goalMl;
     return isHabitDone(tasks, key);
   };
   const startLabel = formatGoalDateLabel(settings.programStartDate, locale);

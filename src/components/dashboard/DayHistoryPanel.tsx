@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useDayHistory } from "@/hooks/use-day-history";
+import { useDailyTracker } from "@/hooks/use-daily-tracker";
 import {
   CURRENT_PROGRAM_ID,
   CUSTOM_RANGE_ID,
@@ -56,12 +57,14 @@ function DayHistoryRow({
   expanded,
   onToggle,
   onDelete,
+  onLogForDate,
   deleting,
 }: {
   day: DayHistoryRecord;
   expanded: boolean;
   onToggle: () => void;
   onDelete: () => void;
+  onLogForDate: (date: string) => void;
   deleting: boolean;
 }) {
   const { t } = useI18n();
@@ -159,7 +162,7 @@ function DayHistoryRow({
       {expanded && (
         <tr className="border-t border-primary/10 bg-background/40">
           <td colSpan={8} className="px-3 py-3 sm:px-4">
-            <DayHistoryDetail day={day} />
+            <DayHistoryDetail day={day} onLogForDate={onLogForDate} />
           </td>
         </tr>
       )}
@@ -167,20 +170,37 @@ function DayHistoryRow({
   );
 }
 
-function DayHistoryDetail({ day }: { day: DayHistoryRecord }) {
+function DayHistoryDetail({ day, onLogForDate }: { day: DayHistoryRecord; onLogForDate: (date: string) => void }) {
   const { t, locale } = useI18n();
   const numberLocale = bcp47Tag(locale);
+  const today = format(new Date(), "yyyy-MM-dd");
+  const isToday = day.date === today;
+
+  const LogForDateButton = !isToday && (
+    <button
+      type="button"
+      onClick={() => onLogForDate(day.date)}
+      className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-primary hover:text-primary/80 underline decoration-dotted"
+    >
+      {t("history.logForDate")}
+    </button>
+  );
 
   if (!day.hasAnyData) {
     return (
-      <p className="font-mono text-xs text-muted-foreground">
-        {t("history.noRecords")}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-mono text-xs text-muted-foreground">
+          {t("history.noRecords")}
+        </p>
+        {LogForDateButton}
+      </div>
     );
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-3">
+      {LogForDateButton}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <section>
         <p className="mb-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           {t("history.detailFood", { kcal: day.totalCalories })}
@@ -254,6 +274,7 @@ function DayHistoryDetail({ day }: { day: DayHistoryRecord }) {
           </ul>
         )}
       </section>
+      </div>
     </div>
   );
 }
@@ -324,6 +345,7 @@ export function DayHistoryPanel() {
     deleteVisibleRange,
     deleteArchivedPeriod,
   } = useDayHistory();
+  const { setLogDate } = useDailyTracker();
   const { t } = useI18n();
 
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -657,6 +679,10 @@ export function DayHistoryPanel() {
                     onDelete={() =>
                       void handleDeleteDay(day.date, day.dateLabel)
                     }
+                    onLogForDate={(date) => {
+                      setLogDate(date);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                     deleting={deletingId === day.date || busy}
                   />
                 ))
