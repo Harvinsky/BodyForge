@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { DeerLogo } from "@/components/dashboard/deer-logo";
 import { NotificationsBellMenu } from "@/components/dashboard/notifications-bell-menu";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,20 @@ export function DashboardHeader() {
   const { email, signOut } = useAppUser();
   const { settings } = useBodyGoal();
   const { t, locale } = useI18n();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t("common.deleteAccountConfirm"))) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/account/delete", { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      await signOut();
+    } catch {
+      alert(t("common.deleteAccountError"));
+      setDeleting(false);
+    }
+  };
   const configured = isBodyGoalConfigured(settings);
   const timePercent = getGoalProgressPercent(settings);
   const weightPercent = getWeightProgressPercent(settings);
@@ -74,6 +89,18 @@ export function DashboardHeader() {
                     <LogOut className="h-3 w-3" />
                     <span className="sr-only sm:not-sr-only sm:ml-1">
                       {t("common.signOut")}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleDeleteAccount()}
+                    disabled={deleting}
+                    className="h-8 border-destructive/40 px-2.5 text-[10px] text-destructive hover:bg-destructive/10 sm:text-xs"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span className="sr-only sm:not-sr-only sm:ml-1">
+                      {t("common.deleteAccount")}
                     </span>
                   </Button>
                 </div>
