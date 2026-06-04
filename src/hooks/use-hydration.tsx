@@ -212,16 +212,19 @@ export function HydrationProvider({ children }: { children: React.ReactNode }) {
 
   const applyLogsUpdate = useCallback(
     (compute: (prev: HydrationLogEntry[]) => HydrationLogEntry[]) => {
+      const prevTotal = sumHydrationMl(logsRef.current);
       const nextLogs = compute(logsRef.current);
+      const nextTotal = sumHydrationMl(nextLogs);
+      const delta = nextTotal - prevTotal;
       logsRef.current = nextLogs;
       setLogs(nextLogs);
       saveLocalLogs(userId, dateStr, nextLogs);
-      applyHydrationFlagsLocal(sumHydrationMl(nextLogs));
-      void syncLevelsSafe(sumHydrationMl(nextLogs));
-      void loadWeekTotal();
+      applyHydrationFlagsLocal(nextTotal);
+      void syncLevelsSafe(nextTotal);
+      setWeekTotalMl((prev) => prev + delta);
       return nextLogs;
     },
-    [dateStr, syncLevelsSafe, applyHydrationFlagsLocal, loadWeekTotal, userId]
+    [dateStr, syncLevelsSafe, applyHydrationFlagsLocal, userId]
   );
 
   const addWater = useCallback(
