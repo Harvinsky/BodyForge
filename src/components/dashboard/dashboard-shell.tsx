@@ -104,31 +104,39 @@ function DashboardContent() {
             </div>
             <ProtocolModules />
             <DayHistoryPanel />
-            {userId && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
-                <p className="mb-3 font-mono text-xs uppercase tracking-widest text-red-400">
-                  {t("common.deleteAccount")}
-                </p>
-                <p className="mb-4 text-xs text-muted-foreground">
-                  {t("common.deleteAccountConfirm")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void handleDeleteAccount()}
-                  disabled={deleting}
-                  className="flex items-center gap-2 rounded-md border border-red-500/50 bg-red-500/10 px-4 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {deleting ? "..." : t("common.deleteAccount")}
-                </button>
-              </div>
-            )}
           </div>
           <div className="order-1 w-full min-w-0 max-lg:pt-0 lg:order-2 lg:sticky lg:top-[5.5rem] lg:self-start">
             <StatsSidebar />
           </div>
         </div>
       </main>
+      {userId && (
+        <button
+          type="button"
+          onClick={() => void handleDeleteAccount()}
+          disabled={deleting}
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(239,68,68,0.15)",
+            border: "1px solid rgba(239,68,68,0.5)",
+            color: "#ef4444",
+            borderRadius: "8px",
+            padding: "8px 14px",
+            fontSize: "12px",
+            fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          <Trash2 style={{ width: 14, height: 14 }} />
+          {t("common.deleteAccount")}
+        </button>
+      )}
     </DashboardFrame>
   );
 }
