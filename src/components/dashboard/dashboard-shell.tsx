@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { WeeklyProgress } from "@/components/dashboard/weekly-progress";
 import { CalendarEvents } from "@/components/dashboard/calendar-events";
@@ -23,9 +24,23 @@ function DashboardFrame({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardContent() {
-  const { authReady } = useAppUser();
+  const { authReady, userId, signOut } = useAppUser();
   const { t } = useI18n();
   const [weeklyOpen, setWeeklyOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t("common.deleteAccountConfirm"))) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/account/delete", { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      await signOut();
+    } catch {
+      alert(t("common.deleteAccountError"));
+      setDeleting(false);
+    }
+  };
 
   if (!authReady) {
     return (
@@ -89,6 +104,25 @@ function DashboardContent() {
             </div>
             <ProtocolModules />
             <DayHistoryPanel />
+            {userId && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
+                <p className="mb-3 font-mono text-xs uppercase tracking-widest text-red-400">
+                  {t("common.deleteAccount")}
+                </p>
+                <p className="mb-4 text-xs text-muted-foreground">
+                  {t("common.deleteAccountConfirm")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteAccount()}
+                  disabled={deleting}
+                  className="flex items-center gap-2 rounded-md border border-red-500/50 bg-red-500/10 px-4 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {deleting ? "..." : t("common.deleteAccount")}
+                </button>
+              </div>
+            )}
           </div>
           <div className="order-1 w-full min-w-0 max-lg:pt-0 lg:order-2 lg:sticky lg:top-[5.5rem] lg:self-start">
             <StatsSidebar />
